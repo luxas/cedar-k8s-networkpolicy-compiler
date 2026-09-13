@@ -1,0 +1,56 @@
+// Cedar schema for Kubernetes NetworkPolicy.
+//
+// See docs/concepts/encoding.md for the encoding rationale. Two facts drive the shape of this schema:
+//
+//  1. Cedar records cannot have dynamic keys, so a Kubernetes label map becomes a
+//     side entity carrying the labels as Cedar tags.
+//  2. Cedar's partial-evaluation `PartialEntity.attrs` is all-or-nothing: when
+//     supplied, every required attribute must be present. A Pod whose address we do
+//     not know must therefore keep the address on a *separate* entity, so that the
+//     Pod itself can stay fully concrete while only the address is unknown.
+
+// A Kubernetes label map (`metadata.labels`): tag key -> tag value.
+entity StringStringMap = {} tags String;
+
+// A container's named ports: port name -> port number.
+entity StringLongMap = {} tags Long;
+
+// A single IP address, on its own entity so that it can be left unknown.
+entity IpAddr = {
+    addr: ipaddr,
+};
+
+entity Namespace = {
+    name: String,
+    labels: StringStringMap,
+};
+
+entity Pod = {
+    name: String,
+    namespace: Namespace,
+    labels: StringStringMap,
+    namedPorts: StringLongMap,
+    ip: IpAddr,
+};
+
+// A cluster-external address: an `ipBlock` peer with no Pod behind it.
+// Carries `ip` with the same type as `Pod` so that `X.ip.addr` typechecks for
+// either principal/resource type under strict validation.
+entity IpEndpoint = {
+    ip: IpAddr,
+};
+
+entity Protocol enum ["TCP", "UDP", "SCTP"];
+
+// Kubernetes requires *both* the source's egress rules and the destination's
+// ingress rules to allow a connection. Cedar's `permit` is a disjunction, so the
+// two halves are separate actions whose decisions the caller ANDs. Both use the
+// same principal (source) and resource (destination).
+action "ingress", "egress" appliesTo {
+    principal: [Pod, IpEndpoint],
+    resource: [Pod, IpEndpoint],
+    context: {
+        port: Long,
+        protocol: Protocol,
+    },
+};

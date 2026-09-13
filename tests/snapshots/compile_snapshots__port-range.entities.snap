@@ -1,0 +1,160 @@
+---
+source: tests/compile_snapshots.rs
+expression: "serde_json :: to_string_pretty(& fixture.entities_json).unwrap()"
+---
+[
+  {
+    "uid": {
+      "type": "Pod",
+      "id": "default/client"
+    },
+    "attrs": {
+      "name": "client",
+      "namespace": {
+        "__entity": {
+          "type": "Namespace",
+          "id": "default"
+        }
+      },
+      "labels": {
+        "__entity": {
+          "type": "StringStringMap",
+          "id": "pod/default/client"
+        }
+      },
+      "namedPorts": {
+        "__entity": {
+          "type": "StringLongMap",
+          "id": "ports/default/client"
+        }
+      },
+      "ip": {
+        "__entity": {
+          "type": "IpAddr",
+          "id": "default/client"
+        }
+      }
+    },
+    "parents": [],
+    "tags": {}
+  },
+  {
+    "uid": {
+      "type": "StringStringMap",
+      "id": "pod/default/client"
+    },
+    "attrs": {},
+    "parents": [],
+    "tags": {
+      "app": "client"
+    }
+  },
+  {
+    "uid": {
+      "type": "StringLongMap",
+      "id": "ports/default/client"
+    },
+    "attrs": {},
+    "parents": [],
+    "tags": {}
+  },
+  {
+    "uid": {
+      "type": "IpAddr",
+      "id": "default/client"
+    },
+    "parents": [],
+    "tags": {}
+  },
+  {
+    "uid": {
+      "type": "Pod",
+      "id": "default/svc"
+    },
+    "attrs": {
+      "name": "svc",
+      "namespace": {
+        "__entity": {
+          "type": "Namespace",
+          "id": "default"
+        }
+      },
+      "labels": {
+        "__entity": {
+          "type": "StringStringMap",
+          "id": "pod/default/svc"
+        }
+      },
+      "namedPorts": {
+        "__entity": {
+          "type": "StringLongMap",
+          "id": "ports/default/svc"
+        }
+      },
+      "ip": {
+        "__entity": {
+          "type": "IpAddr",
+          "id": "default/svc"
+        }
+      }
+    },
+    "parents": [],
+    "tags": {}
+  },
+  {
+    "uid": {
+      "type": "StringStringMap",
+      "id": "pod/default/svc"
+    },
+    "attrs": {},
+    "parents": [],
+    "tags": {
+      "app": "svc"
+    }
+  },
+  {
+    "uid": {
+      "type": "StringLongMap",
+      "id": "ports/default/svc"
+    },
+    "attrs": {},
+    "parents": [],
+    "tags": {}
+  },
+  {
+    "uid": {
+      "type": "IpAddr",
+      "id": "default/svc"
+    },
+    "parents": [],
+    "tags": {}
+  },
+  {
+    "uid": {
+      "type": "Namespace",
+      "id": "default"
+    },
+    "attrs": {
+      "name": "default",
+      "labels": {
+        "__entity": {
+          "type": "StringStringMap",
+          "id": "ns/default"
+        }
+      }
+    },
+    "parents": [],
+    "tags": {}
+  },
+  {
+    "uid": {
+      "type": "StringStringMap",
+      "id": "ns/default"
+    },
+    "attrs": {},
+    "parents": [],
+    "tags": {
+      "kubernetes.io/metadata.name": "default"
+    }
+  }
+]

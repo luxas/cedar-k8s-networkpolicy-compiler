@@ -1,0 +1,306 @@
+---
+source: tests/compile_snapshots.rs
+expression: "serde_json :: to_string_pretty(& fixture.entities_json).unwrap()"
+---
+[
+  {
+    "uid": {
+      "type": "Pod",
+      "id": "locked/a"
+    },
+    "attrs": {
+      "name": "a",
+      "namespace": {
+        "__entity": {
+          "type": "Namespace",
+          "id": "locked"
+        }
+      },
+      "labels": {
+        "__entity": {
+          "type": "StringStringMap",
+          "id": "pod/locked/a"
+        }
+      },
+      "namedPorts": {
+        "__entity": {
+          "type": "StringLongMap",
+          "id": "ports/locked/a"
+        }
+      },
+      "ip": {
+        "__entity": {
+          "type": "IpAddr",
+          "id": "locked/a"
+        }
+      }
+    },
+    "parents": [],
+    "tags": {}
+  },
+  {
+    "uid": {
+      "type": "StringStringMap",
+      "id": "pod/locked/a"
+    },
+    "attrs": {},
+    "parents": [],
+    "tags": {}
+  },
+  {
+    "uid": {
+      "type": "StringLongMap",
+      "id": "ports/locked/a"
+    },
+    "attrs": {},
+    "parents": [],
+    "tags": {}
+  },
+  {
+    "uid": {
+      "type": "IpAddr",
+      "id": "locked/a"
+    },
+    "parents": [],
+    "tags": {}
+  },
+  {
+    "uid": {
+      "type": "Pod",
+      "id": "locked/b"
+    },
+    "attrs": {
+      "name": "b",
+      "namespace": {
+        "__entity": {
+          "type": "Namespace",
+          "id": "locked"
+        }
+      },
+      "labels": {
+        "__entity": {
+          "type": "StringStringMap",
+          "id": "pod/locked/b"
+        }
+      },
+      "namedPorts": {
+        "__entity": {
+          "type": "StringLongMap",
+          "id": "ports/locked/b"
+        }
+      },
+      "ip": {
+        "__entity": {
+          "type": "IpAddr",
+          "id": "locked/b"
+        }
+      }
+    },
+    "parents": [],
+    "tags": {}
+  },
+  {
+    "uid": {
+      "type": "StringStringMap",
+      "id": "pod/locked/b"
+    },
+    "attrs": {},
+    "parents": [],
+    "tags": {}
+  },
+  {
+    "uid": {
+      "type": "StringLongMap",
+      "id": "ports/locked/b"
+    },
+    "attrs": {},
+    "parents": [],
+    "tags": {}
+  },
+  {
+    "uid": {
+      "type": "IpAddr",
+      "id": "locked/b"
+    },
+    "parents": [],
+    "tags": {}
+  },
+  {
+    "uid": {
+      "type": "Pod",
+      "id": "open/c"
+    },
+    "attrs": {
+      "name": "c",
+      "namespace": {
+        "__entity": {
+          "type": "Namespace",
+          "id": "open"
+        }
+      },
+      "labels": {
+        "__entity": {
+          "type": "StringStringMap",
+          "id": "pod/open/c"
+        }
+      },
+      "namedPorts": {
+        "__entity": {
+          "type": "StringLongMap",
+          "id": "ports/open/c"
+        }
+      },
+      "ip": {
+        "__entity": {
+          "type": "IpAddr",
+          "id": "open/c"
+        }
+      }
+    },
+    "parents": [],
+    "tags": {}
+  },
+  {
+    "uid": {
+      "type": "StringStringMap",
+      "id": "pod/open/c"
+    },
+    "attrs": {},
+    "parents": [],
+    "tags": {}
+  },
+  {
+    "uid": {
+      "type": "StringLongMap",
+      "id": "ports/open/c"
+    },
+    "attrs": {},
+    "parents": [],
+    "tags": {}
+  },
+  {
+    "uid": {
+      "type": "IpAddr",
+      "id": "open/c"
+    },
+    "parents": [],
+    "tags": {}
+  },
+  {
+    "uid": {
+      "type": "Pod",
+      "id": "open/d"
+    },
+    "attrs": {
+      "name": "d",
+      "namespace": {
+        "__entity": {
+          "type": "Namespace",
+          "id": "open"
+        }
+      },
+      "labels": {
+        "__entity": {
+          "type": "StringStringMap",
+          "id": "pod/open/d"
+        }
+      },
+      "namedPorts": {
+        "__entity": {
+          "type": "StringLongMap",
+          "id": "ports/open/d"
+        }
+      },
+      "ip": {
+        "__entity": {
+          "type": "IpAddr",
+          "id": "open/d"
+        }
+      }
+    },
+    "parents": [],
+    "tags": {}
+  },
+  {
+    "uid": {
+      "type": "StringStringMap",
+      "id": "pod/open/d"
+    },
+    "attrs": {},
+    "parents": [],
+    "tags": {}
+  },
+  {
+    "uid": {
+      "type": "StringLongMap",
+      "id": "ports/open/d"
+    },
+    "attrs": {},
+    "parents": [],
+    "tags": {}
+  },
+  {
+    "uid": {
+      "type": "IpAddr",
+      "id": "open/d"
+    },
+    "parents": [],
+    "tags": {}
+  },
+  {
+    "uid": {
+      "type": "Namespace",
+      "id": "locked"
+    },
+    "attrs": {
+      "name": "locked",
+      "labels": {
+        "__entity": {
+          "type": "StringStringMap",
+          "id": "ns/locked"
+        }
+      }
+    },
+    "parents": [],
+    "tags": {}
+  },
+  {
+    "uid": {
+      "type": "StringStringMap",
+      "id": "ns/locked"
+    },
+    "attrs": {},
+    "parents": [],
+    "tags": {
+      "kubernetes.io/metadata.name": "locked"
+    }
+  },
+  {
+    "uid": {
+      "type": "Namespace",
+      "id": "open"
+    },
+    "attrs": {
+      "name": "open",
+      "labels": {
+        "__entity": {
+          "type": "StringStringMap",
+          "id": "ns/open"
+        }
+      }
+    },
+    "parents": [],
+    "tags": {}
+  },
+  {
+    "uid": {
+      "type": "StringStringMap",
+      "id": "ns/open"
+    },
+    "attrs": {},
+    "parents": [],
+    "tags": {
+      "kubernetes.io/metadata.name": "open"
+    }
+  }
+]

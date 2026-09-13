@@ -1,0 +1,25 @@
+# An isolating policy with no rules: the classic default-deny.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: deny-all
+  namespace: locked
+spec:
+  podSelector: {}
+  policyTypes: [Ingress, Egress]
+---
+apiVersion: v1
+kind: Pod
+metadata: {name: a, namespace: locked}
+---
+apiVersion: v1
+kind: Pod
+metadata: {name: b, namespace: locked}
+---
+apiVersion: v1
+kind: Pod
+metadata: {name: c, namespace: open}
+---
+apiVersion: v1
+kind: Pod
+metadata: {name: d, namespace: open}

@@ -1,0 +1,61 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-from-monitoring
+  namespace: prod
+spec:
+  podSelector:
+    matchLabels: {app: db}
+  policyTypes: [Ingress]
+  ingress:
+    - from:
+        # By the name label Kubernetes applies to every namespace.
+        - namespaceSelector:
+            matchLabels: {kubernetes.io/metadata.name: monitoring}
+        # A namespace label plus a pod label: both must match.
+        - namespaceSelector:
+            matchLabels: {team: platform}
+          podSelector:
+            matchLabels: {app: scraper}
+---
+# An empty namespaceSelector selects every namespace.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-from-anywhere
+  namespace: stage
+spec:
+  podSelector:
+    matchLabels: {app: db}
+  policyTypes: [Ingress]
+  ingress:
+    - from:
+        - namespaceSelector: {}
+---
+apiVersion: v1
+kind: Namespace
+metadata: {name: platform, labels: {team: platform}}
+---
+apiVersion: v1
+kind: Pod
+metadata: {name: db, namespace: prod, labels: {app: db}}
+---
+apiVersion: v1
+kind: Pod
+metadata: {name: db, namespace: stage, labels: {app: db}}
+---
+apiVersion: v1
+kind: Pod
+metadata: {name: prom, namespace: monitoring, labels: {app: prom}}
+---
+apiVersion: v1
+kind: Pod
+metadata: {name: scraper, namespace: platform, labels: {app: scraper}}
+---
+apiVersion: v1
+kind: Pod
+metadata: {name: other, namespace: platform, labels: {app: other}}
+---
+apiVersion: v1
+kind: Pod
+metadata: {name: x, namespace: dev, labels: {app: x}}

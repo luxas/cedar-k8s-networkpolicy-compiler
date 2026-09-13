@@ -1,0 +1,223 @@
+---
+source: tests/compile_snapshots.rs
+expression: "serde_json :: to_string_pretty(& fixture.entities_json).unwrap()"
+---
+[
+  {
+    "uid": {
+      "type": "Pod",
+      "id": "default/api"
+    },
+    "attrs": {
+      "name": "api",
+      "namespace": {
+        "__entity": {
+          "type": "Namespace",
+          "id": "default"
+        }
+      },
+      "labels": {
+        "__entity": {
+          "type": "StringStringMap",
+          "id": "pod/default/api"
+        }
+      },
+      "namedPorts": {
+        "__entity": {
+          "type": "StringLongMap",
+          "id": "ports/default/api"
+        }
+      },
+      "ip": {
+        "__entity": {
+          "type": "IpAddr",
+          "id": "default/api"
+        }
+      }
+    },
+    "parents": [],
+    "tags": {}
+  },
+  {
+    "uid": {
+      "type": "StringStringMap",
+      "id": "pod/default/api"
+    },
+    "attrs": {},
+    "parents": [],
+    "tags": {
+      "app": "api"
+    }
+  },
+  {
+    "uid": {
+      "type": "StringLongMap",
+      "id": "ports/default/api"
+    },
+    "attrs": {},
+    "parents": [],
+    "tags": {}
+  },
+  {
+    "uid": {
+      "type": "IpAddr",
+      "id": "default/api"
+    },
+    "parents": [],
+    "tags": {}
+  },
+  {
+    "uid": {
+      "type": "Pod",
+      "id": "default/other"
+    },
+    "attrs": {
+      "name": "other",
+      "namespace": {
+        "__entity": {
+          "type": "Namespace",
+          "id": "default"
+        }
+      },
+      "labels": {
+        "__entity": {
+          "type": "StringStringMap",
+          "id": "pod/default/other"
+        }
+      },
+      "namedPorts": {
+        "__entity": {
+          "type": "StringLongMap",
+          "id": "ports/default/other"
+        }
+      },
+      "ip": {
+        "__entity": {
+          "type": "IpAddr",
+          "id": "default/other"
+        }
+      }
+    },
+    "parents": [],
+    "tags": {}
+  },
+  {
+    "uid": {
+      "type": "StringStringMap",
+      "id": "pod/default/other"
+    },
+    "attrs": {},
+    "parents": [],
+    "tags": {
+      "app": "other"
+    }
+  },
+  {
+    "uid": {
+      "type": "StringLongMap",
+      "id": "ports/default/other"
+    },
+    "attrs": {},
+    "parents": [],
+    "tags": {}
+  },
+  {
+    "uid": {
+      "type": "IpAddr",
+      "id": "default/other"
+    },
+    "parents": [],
+    "tags": {}
+  },
+  {
+    "uid": {
+      "type": "Pod",
+      "id": "default/web"
+    },
+    "attrs": {
+      "name": "web",
+      "namespace": {
+        "__entity": {
+          "type": "Namespace",
+          "id": "default"
+        }
+      },
+      "labels": {
+        "__entity": {
+          "type": "StringStringMap",
+          "id": "pod/default/web"
+        }
+      },
+      "namedPorts": {
+        "__entity": {
+          "type": "StringLongMap",
+          "id": "ports/default/web"
+        }
+      },
+      "ip": {
+        "__entity": {
+          "type": "IpAddr",
+          "id": "default/web"
+        }
+      }
+    },
+    "parents": [],
+    "tags": {}
+  },
+  {
+    "uid": {
+      "type": "StringStringMap",
+      "id": "pod/default/web"
+    },
+    "attrs": {},
+    "parents": [],
+    "tags": {
+      "app": "web"
+    }
+  },
+  {
+    "uid": {
+      "type": "StringLongMap",
+      "id": "ports/default/web"
+    },
+    "attrs": {},
+    "parents": [],
+    "tags": {}
+  },
+  {
+    "uid": {
+      "type": "IpAddr",
+      "id": "default/web"
+    },
+    "parents": [],
+    "tags": {}
+  },
+  {
+    "uid": {
+      "type": "Namespace",
+      "id": "default"
+    },
+    "attrs": {
+      "name": "default",
+      "labels": {
+        "__entity": {
+          "type": "StringStringMap",
+          "id": "ns/default"
+        }
+      }
+    },
+    "parents": [],
+    "tags": {}
+  },
+  {
+    "uid": {
+      "type": "StringStringMap",
+      "id": "ns/default"
+    },
+    "attrs": {},
+    "parents": [],
+    "tags": {
+      "kubernetes.io/metadata.name": "default"
+    }
+  }
+]

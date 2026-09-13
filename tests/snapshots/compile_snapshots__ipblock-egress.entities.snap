@@ -1,0 +1,247 @@
+---
+source: tests/compile_snapshots.rs
+expression: "serde_json :: to_string_pretty(& fixture.entities_json).unwrap()"
+---
+[
+  {
+    "uid": {
+      "type": "Pod",
+      "id": "default/elsewhere"
+    },
+    "attrs": {
+      "name": "elsewhere",
+      "namespace": {
+        "__entity": {
+          "type": "Namespace",
+          "id": "default"
+        }
+      },
+      "labels": {
+        "__entity": {
+          "type": "StringStringMap",
+          "id": "pod/default/elsewhere"
+        }
+      },
+      "namedPorts": {
+        "__entity": {
+          "type": "StringLongMap",
+          "id": "ports/default/elsewhere"
+        }
+      },
+      "ip": {
+        "__entity": {
+          "type": "IpAddr",
+          "id": "default/elsewhere"
+        }
+      }
+    },
+    "parents": [],
+    "tags": {}
+  },
+  {
+    "uid": {
+      "type": "StringStringMap",
+      "id": "pod/default/elsewhere"
+    },
+    "attrs": {},
+    "parents": [],
+    "tags": {
+      "app": "elsewhere"
+    }
+  },
+  {
+    "uid": {
+      "type": "StringLongMap",
+      "id": "ports/default/elsewhere"
+    },
+    "attrs": {},
+    "parents": [],
+    "tags": {}
+  },
+  {
+    "uid": {
+      "type": "IpAddr",
+      "id": "default/elsewhere"
+    },
+    "parents": [],
+    "tags": {},
+    "attrs": {
+      "addr": {
+        "__extn": {
+          "fn": "ip",
+          "arg": "172.16.0.9"
+        }
+      }
+    }
+  },
+  {
+    "uid": {
+      "type": "Pod",
+      "id": "default/gateway"
+    },
+    "attrs": {
+      "name": "gateway",
+      "namespace": {
+        "__entity": {
+          "type": "Namespace",
+          "id": "default"
+        }
+      },
+      "labels": {
+        "__entity": {
+          "type": "StringStringMap",
+          "id": "pod/default/gateway"
+        }
+      },
+      "namedPorts": {
+        "__entity": {
+          "type": "StringLongMap",
+          "id": "ports/default/gateway"
+        }
+      },
+      "ip": {
+        "__entity": {
+          "type": "IpAddr",
+          "id": "default/gateway"
+        }
+      }
+    },
+    "parents": [],
+    "tags": {}
+  },
+  {
+    "uid": {
+      "type": "StringStringMap",
+      "id": "pod/default/gateway"
+    },
+    "attrs": {},
+    "parents": [],
+    "tags": {
+      "app": "gateway"
+    }
+  },
+  {
+    "uid": {
+      "type": "StringLongMap",
+      "id": "ports/default/gateway"
+    },
+    "attrs": {},
+    "parents": [],
+    "tags": {}
+  },
+  {
+    "uid": {
+      "type": "IpAddr",
+      "id": "default/gateway"
+    },
+    "parents": [],
+    "tags": {},
+    "attrs": {
+      "addr": {
+        "__extn": {
+          "fn": "ip",
+          "arg": "10.244.0.5"
+        }
+      }
+    }
+  },
+  {
+    "uid": {
+      "type": "Pod",
+      "id": "default/internal"
+    },
+    "attrs": {
+      "name": "internal",
+      "namespace": {
+        "__entity": {
+          "type": "Namespace",
+          "id": "default"
+        }
+      },
+      "labels": {
+        "__entity": {
+          "type": "StringStringMap",
+          "id": "pod/default/internal"
+        }
+      },
+      "namedPorts": {
+        "__entity": {
+          "type": "StringLongMap",
+          "id": "ports/default/internal"
+        }
+      },
+      "ip": {
+        "__entity": {
+          "type": "IpAddr",
+          "id": "default/internal"
+        }
+      }
+    },
+    "parents": [],
+    "tags": {}
+  },
+  {
+    "uid": {
+      "type": "StringStringMap",
+      "id": "pod/default/internal"
+    },
+    "attrs": {},
+    "parents": [],
+    "tags": {
+      "app": "internal"
+    }
+  },
+  {
+    "uid": {
+      "type": "StringLongMap",
+      "id": "ports/default/internal"
+    },
+    "attrs": {},
+    "parents": [],
+    "tags": {}
+  },
+  {
+    "uid": {
+      "type": "IpAddr",
+      "id": "default/internal"
+    },
+    "parents": [],
+    "tags": {},
+    "attrs": {
+      "addr": {
+        "__extn": {
+          "fn": "ip",
+          "arg": "10.5.0.1"
+        }
+      }
+    }
+  },
+  {
+    "uid": {
+      "type": "Namespace",
+      "id": "default"
+    },
+    "attrs": {
+      "name": "default",
+      "labels": {
+        "__entity": {
+          "type": "StringStringMap",
+          "id": "ns/default"
+        }
+      }
+    },
+    "parents": [],
+    "tags": {}
+  },
+  {
+    "uid": {
+      "type": "StringStringMap",
+      "id": "ns/default"
+    },
+    "attrs": {},
+    "parents": [],
+    "tags": {
+      "kubernetes.io/metadata.name": "default"
+    }
+  }
+]

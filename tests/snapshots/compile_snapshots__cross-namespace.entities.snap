@@ -1,0 +1,188 @@
+---
+source: tests/compile_snapshots.rs
+expression: "serde_json :: to_string_pretty(& fixture.entities_json).unwrap()"
+---
+[
+  {
+    "uid": {
+      "type": "Pod",
+      "id": "a/front"
+    },
+    "attrs": {
+      "name": "front",
+      "namespace": {
+        "__entity": {
+          "type": "Namespace",
+          "id": "a"
+        }
+      },
+      "labels": {
+        "__entity": {
+          "type": "StringStringMap",
+          "id": "pod/a/front"
+        }
+      },
+      "namedPorts": {
+        "__entity": {
+          "type": "StringLongMap",
+          "id": "ports/a/front"
+        }
+      },
+      "ip": {
+        "__entity": {
+          "type": "IpAddr",
+          "id": "a/front"
+        }
+      }
+    },
+    "parents": [],
+    "tags": {}
+  },
+  {
+    "uid": {
+      "type": "StringStringMap",
+      "id": "pod/a/front"
+    },
+    "attrs": {},
+    "parents": [],
+    "tags": {
+      "app": "front"
+    }
+  },
+  {
+    "uid": {
+      "type": "StringLongMap",
+      "id": "ports/a/front"
+    },
+    "attrs": {},
+    "parents": [],
+    "tags": {}
+  },
+  {
+    "uid": {
+      "type": "IpAddr",
+      "id": "a/front"
+    },
+    "parents": [],
+    "tags": {}
+  },
+  {
+    "uid": {
+      "type": "Pod",
+      "id": "b/back"
+    },
+    "attrs": {
+      "name": "back",
+      "namespace": {
+        "__entity": {
+          "type": "Namespace",
+          "id": "b"
+        }
+      },
+      "labels": {
+        "__entity": {
+          "type": "StringStringMap",
+          "id": "pod/b/back"
+        }
+      },
+      "namedPorts": {
+        "__entity": {
+          "type": "StringLongMap",
+          "id": "ports/b/back"
+        }
+      },
+      "ip": {
+        "__entity": {
+          "type": "IpAddr",
+          "id": "b/back"
+        }
+      }
+    },
+    "parents": [],
+    "tags": {}
+  },
+  {
+    "uid": {
+      "type": "StringStringMap",
+      "id": "pod/b/back"
+    },
+    "attrs": {},
+    "parents": [],
+    "tags": {
+      "app": "back"
+    }
+  },
+  {
+    "uid": {
+      "type": "StringLongMap",
+      "id": "ports/b/back"
+    },
+    "attrs": {},
+    "parents": [],
+    "tags": {}
+  },
+  {
+    "uid": {
+      "type": "IpAddr",
+      "id": "b/back"
+    },
+    "parents": [],
+    "tags": {}
+  },
+  {
+    "uid": {
+      "type": "Namespace",
+      "id": "a"
+    },
+    "attrs": {
+      "name": "a",
+      "labels": {
+        "__entity": {
+          "type": "StringStringMap",
+          "id": "ns/a"
+        }
+      }
+    },
+    "parents": [],
+    "tags": {}
+  },
+  {
+    "uid": {
+      "type": "StringStringMap",
+      "id": "ns/a"
+    },
+    "attrs": {},
+    "parents": [],
+    "tags": {
+      "kubernetes.io/metadata.name": "a"
+    }
+  },
+  {
+    "uid": {
+      "type": "Namespace",
+      "id": "b"
+    },
+    "attrs": {
+      "name": "b",
+      "labels": {
+        "__entity": {
+          "type": "StringStringMap",
+          "id": "ns/b"
+        }
+      }
+    },
+    "parents": [],
+    "tags": {}
+  },
+  {
+    "uid": {
+      "type": "StringStringMap",
+      "id": "ns/b"
+    },
+    "attrs": {},
+    "parents": [],
+    "tags": {
+      "kubernetes.io/metadata.name": "b"
+    }
+  }
+]

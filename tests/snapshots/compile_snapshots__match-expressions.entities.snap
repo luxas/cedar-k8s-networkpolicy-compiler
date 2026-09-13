@@ -1,0 +1,415 @@
+---
+source: tests/compile_snapshots.rs
+expression: "serde_json :: to_string_pretty(& fixture.entities_json).unwrap()"
+---
+[
+  {
+    "uid": {
+      "type": "Pod",
+      "id": "default/db"
+    },
+    "attrs": {
+      "name": "db",
+      "namespace": {
+        "__entity": {
+          "type": "Namespace",
+          "id": "default"
+        }
+      },
+      "labels": {
+        "__entity": {
+          "type": "StringStringMap",
+          "id": "pod/default/db"
+        }
+      },
+      "namedPorts": {
+        "__entity": {
+          "type": "StringLongMap",
+          "id": "ports/default/db"
+        }
+      },
+      "ip": {
+        "__entity": {
+          "type": "IpAddr",
+          "id": "default/db"
+        }
+      }
+    },
+    "parents": [],
+    "tags": {}
+  },
+  {
+    "uid": {
+      "type": "StringStringMap",
+      "id": "pod/default/db"
+    },
+    "attrs": {},
+    "parents": [],
+    "tags": {
+      "tier": "db"
+    }
+  },
+  {
+    "uid": {
+      "type": "StringLongMap",
+      "id": "ports/default/db"
+    },
+    "attrs": {},
+    "parents": [],
+    "tags": {}
+  },
+  {
+    "uid": {
+      "type": "IpAddr",
+      "id": "default/db"
+    },
+    "parents": [],
+    "tags": {}
+  },
+  {
+    "uid": {
+      "type": "Pod",
+      "id": "default/fe"
+    },
+    "attrs": {
+      "name": "fe",
+      "namespace": {
+        "__entity": {
+          "type": "Namespace",
+          "id": "default"
+        }
+      },
+      "labels": {
+        "__entity": {
+          "type": "StringStringMap",
+          "id": "pod/default/fe"
+        }
+      },
+      "namedPorts": {
+        "__entity": {
+          "type": "StringLongMap",
+          "id": "ports/default/fe"
+        }
+      },
+      "ip": {
+        "__entity": {
+          "type": "IpAddr",
+          "id": "default/fe"
+        }
+      }
+    },
+    "parents": [],
+    "tags": {}
+  },
+  {
+    "uid": {
+      "type": "StringStringMap",
+      "id": "pod/default/fe"
+    },
+    "attrs": {},
+    "parents": [],
+    "tags": {
+      "tier": "frontend"
+    }
+  },
+  {
+    "uid": {
+      "type": "StringLongMap",
+      "id": "ports/default/fe"
+    },
+    "attrs": {},
+    "parents": [],
+    "tags": {}
+  },
+  {
+    "uid": {
+      "type": "IpAddr",
+      "id": "default/fe"
+    },
+    "parents": [],
+    "tags": {}
+  },
+  {
+    "uid": {
+      "type": "Pod",
+      "id": "default/fe-dmz"
+    },
+    "attrs": {
+      "name": "fe-dmz",
+      "namespace": {
+        "__entity": {
+          "type": "Namespace",
+          "id": "default"
+        }
+      },
+      "labels": {
+        "__entity": {
+          "type": "StringStringMap",
+          "id": "pod/default/fe-dmz"
+        }
+      },
+      "namedPorts": {
+        "__entity": {
+          "type": "StringLongMap",
+          "id": "ports/default/fe-dmz"
+        }
+      },
+      "ip": {
+        "__entity": {
+          "type": "IpAddr",
+          "id": "default/fe-dmz"
+        }
+      }
+    },
+    "parents": [],
+    "tags": {}
+  },
+  {
+    "uid": {
+      "type": "StringStringMap",
+      "id": "pod/default/fe-dmz"
+    },
+    "attrs": {},
+    "parents": [],
+    "tags": {
+      "tier": "frontend",
+      "zone": "dmz"
+    }
+  },
+  {
+    "uid": {
+      "type": "StringLongMap",
+      "id": "ports/default/fe-dmz"
+    },
+    "attrs": {},
+    "parents": [],
+    "tags": {}
+  },
+  {
+    "uid": {
+      "type": "IpAddr",
+      "id": "default/fe-dmz"
+    },
+    "parents": [],
+    "tags": {}
+  },
+  {
+    "uid": {
+      "type": "Pod",
+      "id": "default/fe-quarantined"
+    },
+    "attrs": {
+      "name": "fe-quarantined",
+      "namespace": {
+        "__entity": {
+          "type": "Namespace",
+          "id": "default"
+        }
+      },
+      "labels": {
+        "__entity": {
+          "type": "StringStringMap",
+          "id": "pod/default/fe-quarantined"
+        }
+      },
+      "namedPorts": {
+        "__entity": {
+          "type": "StringLongMap",
+          "id": "ports/default/fe-quarantined"
+        }
+      },
+      "ip": {
+        "__entity": {
+          "type": "IpAddr",
+          "id": "default/fe-quarantined"
+        }
+      }
+    },
+    "parents": [],
+    "tags": {}
+  },
+  {
+    "uid": {
+      "type": "StringStringMap",
+      "id": "pod/default/fe-quarantined"
+    },
+    "attrs": {},
+    "parents": [],
+    "tags": {
+      "quarantine": "true",
+      "tier": "frontend"
+    }
+  },
+  {
+    "uid": {
+      "type": "StringLongMap",
+      "id": "ports/default/fe-quarantined"
+    },
+    "attrs": {},
+    "parents": [],
+    "tags": {}
+  },
+  {
+    "uid": {
+      "type": "IpAddr",
+      "id": "default/fe-quarantined"
+    },
+    "parents": [],
+    "tags": {}
+  },
+  {
+    "uid": {
+      "type": "Pod",
+      "id": "default/mid"
+    },
+    "attrs": {
+      "name": "mid",
+      "namespace": {
+        "__entity": {
+          "type": "Namespace",
+          "id": "default"
+        }
+      },
+      "labels": {
+        "__entity": {
+          "type": "StringStringMap",
+          "id": "pod/default/mid"
+        }
+      },
+      "namedPorts": {
+        "__entity": {
+          "type": "StringLongMap",
+          "id": "ports/default/mid"
+        }
+      },
+      "ip": {
+        "__entity": {
+          "type": "IpAddr",
+          "id": "default/mid"
+        }
+      }
+    },
+    "parents": [],
+    "tags": {}
+  },
+  {
+    "uid": {
+      "type": "StringStringMap",
+      "id": "pod/default/mid"
+    },
+    "attrs": {},
+    "parents": [],
+    "tags": {
+      "tier": "mid",
+      "zone": "internal"
+    }
+  },
+  {
+    "uid": {
+      "type": "StringLongMap",
+      "id": "ports/default/mid"
+    },
+    "attrs": {},
+    "parents": [],
+    "tags": {}
+  },
+  {
+    "uid": {
+      "type": "IpAddr",
+      "id": "default/mid"
+    },
+    "parents": [],
+    "tags": {}
+  },
+  {
+    "uid": {
+      "type": "Pod",
+      "id": "default/target"
+    },
+    "attrs": {
+      "name": "target",
+      "namespace": {
+        "__entity": {
+          "type": "Namespace",
+          "id": "default"
+        }
+      },
+      "labels": {
+        "__entity": {
+          "type": "StringStringMap",
+          "id": "pod/default/target"
+        }
+      },
+      "namedPorts": {
+        "__entity": {
+          "type": "StringLongMap",
+          "id": "ports/default/target"
+        }
+      },
+      "ip": {
+        "__entity": {
+          "type": "IpAddr",
+          "id": "default/target"
+        }
+      }
+    },
+    "parents": [],
+    "tags": {}
+  },
+  {
+    "uid": {
+      "type": "StringStringMap",
+      "id": "pod/default/target"
+    },
+    "attrs": {},
+    "parents": [],
+    "tags": {
+      "app": "target"
+    }
+  },
+  {
+    "uid": {
+      "type": "StringLongMap",
+      "id": "ports/default/target"
+    },
+    "attrs": {},
+    "parents": [],
+    "tags": {}
+  },
+  {
+    "uid": {
+      "type": "IpAddr",
+      "id": "default/target"
+    },
+    "parents": [],
+    "tags": {}
+  },
+  {
+    "uid": {
+      "type": "Namespace",
+      "id": "default"
+    },
+    "attrs": {
+      "name": "default",
+      "labels": {
+        "__entity": {
+          "type": "StringStringMap",
+          "id": "ns/default"
+        }
+      }
+    },
+    "parents": [],
+    "tags": {}
+  },
+  {
+    "uid": {
+      "type": "StringStringMap",
+      "id": "ns/default"
+    },
+    "attrs": {},
+    "parents": [],
+    "tags": {
+      "kubernetes.io/metadata.name": "default"
+    }
+  }
+]
