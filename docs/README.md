@@ -2,8 +2,9 @@
 
 Compiles Kubernetes `NetworkPolicy` objects into a [Cedar](https://cedarpolicy.com) policy
 set, builds the matching entity store from `Pod` and `Namespace` objects, and answers
-questions about them — "may this pod talk to that one?", "what can this pod reach?" —
-with Cedar's authorizer, its type-aware partial evaluation, and an SMT solver.
+questions about them — "may this pod talk to that one?", "what can this pod reach?", "in
+which cases can any pod reach any other?" — with Cedar's authorizer, its type-aware
+partial evaluation, and an SMT solver.
 
 ## Why
 
@@ -27,6 +28,10 @@ Compiling to Cedar turns those semantics into artifacts a machine can be precise
   can be handed to a **symbolic evaluator** backed by cvc5, which turns most unknowns back
   into definite verdicts, exactly rather than heuristically
   ([symbolic discharge](concepts/symbolic-discharge.md)).
+- The egress-AND-ingress conjunction can be **synthesized away**: a derived set of
+  `connect` policies describes, in closed form over labels, namespaces, addresses and
+  ports, every case in which a pod may reach another pod
+  ([connect synthesis](concepts/connect-synthesis.md)).
 
 ## What
 
@@ -37,7 +42,8 @@ One binary (and a library) over three stages, fed from files or a
 NetworkPolicies ──► np2cedar compile  ──► policies.cedar ─┐
 Pods, Namespaces ─► np2cedar entities ──► entities.json ──┤
                                                           ├─► check      may A talk to B?
-                                                          └─► reachable  what can A reach?
+                                                          ├─► reachable  what can A reach?
+                                                          └─► connect    who can reach whom, in general?
 ```
 
 - **`compile` / `entities`** translate the Kubernetes objects
@@ -50,6 +56,9 @@ Pods, Namespaces ─► np2cedar entities ──► entities.json ──┤
   ([guide](guides/reachability.md)).
 - **`--pod-cidr`** on the querying commands discharges address residuals with the
   symbolic evaluator ([guide](guides/discharging-unknowns.md)).
+- **`connect`** synthesizes the implied Pod-to-Pod connect policies with
+  cedar-woodpecker's privilege-escalation synthesis
+  ([guide](guides/connect.md)).
 
 ## How
 
@@ -93,6 +102,7 @@ enumerates. If you know what kind of reader you are, start from
 | May this pod talk to that one? | [checking connectivity](guides/checking-connectivity.md) | [partial evaluation](concepts/partial-evaluation.md) | [CLI: check](reference/cli.md#check) |
 | What can this pod reach? | [reachability](guides/reachability.md) | [partial evaluation](concepts/partial-evaluation.md) | [CLI: reachable](reference/cli.md#reachable) |
 | Unknown pod addresses | [discharging unknowns](guides/discharging-unknowns.md) | [symbolic discharge](concepts/symbolic-discharge.md) | [CLI: --pod-cidr](reference/cli.md#the---pod-cidr-flag) |
+| Who can reach whom, in general? | [connect](guides/connect.md) | [connect synthesis](concepts/connect-synthesis.md) | [CLI: connect](reference/cli.md#connect) |
 | Reading a live cluster | [live cluster](guides/live-cluster.md) | — | [CLI: sources](reference/cli.md#sources) |
 | The codebase | [testing](contributing/testing.md) | [architecture](contributing/architecture.md) | — |
 
@@ -101,7 +111,7 @@ enumerates. If you know what kind of reader you are, start from
 **The operator** — you have a cluster and want answers about it.
 [Quickstart](quickstart.md) → [checking connectivity](guides/checking-connectivity.md) →
 [live cluster](guides/live-cluster.md) → [discharging unknowns](guides/discharging-unknowns.md)
-→ [reachability](guides/reachability.md). Keep the [CLI reference](reference/cli.md) at hand.
+→ [connect](guides/connect.md). Keep the [CLI reference](reference/cli.md) at hand.
 
 **The policy author** — you write NetworkPolicies and want to know what they really mean.
 [The encoding](concepts/encoding.md) → [translation rules](concepts/translation-rules.md)
@@ -111,7 +121,8 @@ subtleties in [partial evaluation](concepts/partial-evaluation.md).
 
 **The formal-methods reader** — you care about what is being decided, and how exactly.
 [The encoding](concepts/encoding.md) → [partial evaluation](concepts/partial-evaluation.md)
-→ [symbolic discharge](concepts/symbolic-discharge.md). The soundness arguments, their
+→ [symbolic discharge](concepts/symbolic-discharge.md) →
+[connect synthesis](concepts/connect-synthesis.md). The soundness arguments, their
 preconditions, and the places where the tool deliberately answers `UNKNOWN` are all there.
 
 **The contributor** — you want to change the code without breaking its promises.

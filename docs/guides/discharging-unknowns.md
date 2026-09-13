@@ -1,7 +1,7 @@
 # Discharging unknowns: `--pod-cidr`
 
 An unknown pod address is not arbitrary: it lies in the cluster's pod CIDR. The
-repeatable `--pod-cidr` flag (on `check` and `reachable`) hands exactly that
+repeatable `--pod-cidr` flag (on `check`, `reachable` and `connect`) hands exactly that
 constraint to a symbolic evaluator backed by cvc5, which decides, per residual rule,
 whether it can still match — pruning the ones that cannot, and collapsing the verdict
 when that settles a direction. The machinery and its soundness argument live in
@@ -50,4 +50,5 @@ Repeat the flag: `--pod-cidr 10.244.0.0/16 --pod-cidr fd00::/8`. Note that Cedar
 does not match a v4 `0.0.0.0/0` — so on the fixture above, dual-stack still denies.
 
 Neighbours: [checking connectivity](checking-connectivity.md) ·
-[symbolic discharge](../concepts/symbolic-discharge.md)
+[symbolic discharge](../concepts/symbolic-discharge.md) ·
+[connect](connect.md) (the same flag prunes the synthesis)

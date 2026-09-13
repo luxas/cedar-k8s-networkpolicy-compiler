@@ -42,7 +42,8 @@ verdict (real output, `tests/data/unknown-pod-ip`):
 ```
 
 The gateway pod's only egress rule allows the public internet — so against *pods*, it
-allows nothing at all.
+allows nothing at all. For the closed-form version of this question over every source pod
+at once, see [connect](connect.md).
 
 Neighbours: [checking connectivity](checking-connectivity.md) ·
 [discharging unknowns](discharging-unknowns.md) ·

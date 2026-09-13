@@ -14,15 +14,20 @@ narrative is in [the encoding](../concepts/encoding.md).
 | `IpAddr` | `{ addr: ipaddr }` | an address that can be **unknown** independently of its pod — Cedar partial entities are all-or-nothing per entity ([why](../concepts/partial-evaluation.md)) |
 | `IpEndpoint` | `{ ip: IpAddr }` | a cluster-external peer; shares the `ip` shape so `X.ip.addr` typechecks for either endpoint type |
 | `StringStringMap`, `StringLongMap` | entities with `tags` | Cedar records have no dynamic keys; labels and named ports are tag lookups, every `getTag` guarded by `hasTag` |
-| `Protocol` | `enum ["TCP", "UDP", "SCTP"]` | finite domain; typos become validation errors |
+| `Protocol` | `enum ["TCP", "UDP", "SCTP"]` | finite domain for the solver; typos become validation errors |
 
 ## Actions
 
 | Action | principal | resource | context |
 | --- | --- | --- | --- |
 | `ingress`, `egress` | `[Pod, IpEndpoint]` | `[Pod, IpEndpoint]` | `{ port: Long, protocol: Protocol }` |
+| `connect` | `[Pod]` | `[Pod]` | `{ port: Long, protocol: Protocol }` |
 
 For `ingress` and `egress` alike, **principal is the traffic source and resource the
 destination**; only the action changes between the two requests of one connection.
+`connect` is synthesis-only: the compiler never emits policies for it
+([connect synthesis](../concepts/connect-synthesis.md)), and its context must keep
+exactly the ingress/egress shape — the synthesis equates all three requests' context
+attributes and guards that the shapes match.
 
 Neighbours: [the encoding](../concepts/encoding.md) · [CLI reference](cli.md)

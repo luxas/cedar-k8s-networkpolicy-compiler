@@ -56,4 +56,6 @@ Requires cvc5 (`$CVC5` or on `$PATH`). The solver is spawned only when there is 
 to discharge.
 
 Neighbours: [partial evaluation](partial-evaluation.md) ·
-[discharging unknowns](../guides/discharging-unknowns.md)
+[discharging unknowns](../guides/discharging-unknowns.md) ·
+[connect synthesis](connect-synthesis.md) (the same solver, synthesizing rather than
+discharging)

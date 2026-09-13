@@ -23,6 +23,9 @@ which is exactly what a set of `permit`s gives. So each NetworkPolicy rule compi
 into one readable, annotated Cedar policy, and additivity falls out for free: two
 policies selecting the same pod produce two permits, which Cedar ORs.
 
+(The conjunction itself can also be reified and synthesized away — that is the
+[`connect` action](connect-synthesis.md).)
+
 ## The three kinds of compiled policy
 
 **A catch-all per direction**, carrying Kubernetes' default-allow. A pod is *isolated*
