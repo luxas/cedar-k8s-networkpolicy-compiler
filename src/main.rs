@@ -26,12 +26,19 @@ struct Cli {
     command: Command,
 }
 
-/// Where to read Kubernetes objects from.
+/// Where to read Kubernetes objects from. Exactly one source must be chosen.
 #[derive(Args)]
+#[command(group = ArgGroup::new("source").required(true).multiple(false)
+    .args(["filenames", "cluster"]))]
 struct Source {
     /// Files, directories (recursed) or `-` for stdin.
-    #[arg(short = 'f', long = "filename", required = true, num_args = 1..)]
+    #[arg(short = 'f', long = "filename", num_args = 1..)]
     filenames: Vec<PathBuf>,
+    /// Read live objects from a Kubernetes cluster.
+    #[arg(long)]
+    cluster: bool,
+    #[command(flatten)]
+    cluster_options: ClusterOptions,
     /// Write here instead of stdout.
     #[arg(short, long)]
     output: Option<PathBuf>,
@@ -41,7 +48,7 @@ struct Source {
 /// produced earlier, or objects to compile on the spot.
 #[derive(Args)]
 #[command(group = ArgGroup::new("store").required(true).multiple(false)
-    .args(["policies", "filenames"]))]
+    .args(["policies", "filenames", "cluster"]))]
 struct Store {
     /// A `.cedar` file produced by `np2cedar compile`. Needs --entities too.
     #[arg(long, requires = "entities")]
@@ -52,21 +59,110 @@ struct Store {
     /// Compile these files on the fly instead of using --policies/--entities.
     #[arg(short = 'f', long = "filename", num_args = 1..)]
     filenames: Vec<PathBuf>,
+    /// Compile live cluster objects on the fly.
+    #[arg(long)]
+    cluster: bool,
+    #[command(flatten)]
+    cluster_options: ClusterOptions,
+}
+
+/// Applies wherever `--cluster` does. Registered even when the `cluster` feature is
+/// off, so that using it then produces an actionable error rather than an unknown
+/// flag, and so the argument graph is identical in both builds.
+#[derive(Args, Clone, Default)]
+struct ClusterOptions {
+    /// An explicit kubeconfig file (default: $KUBECONFIG, then the usual place).
+    #[arg(long)]
+    kubeconfig: Option<PathBuf>,
+    /// kubeconfig context (default: the current one, else the in-cluster account).
+    #[arg(long)]
+    context: Option<String>,
+    /// Restrict the pods fetched. Policies are always read cluster-wide.
+    #[arg(short = 'n', long = "namespace")]
+    namespaces: Vec<String>,
+    /// Label selector applied to the pod listing.
+    #[arg(short = 'l', long)]
+    selector: Option<String>,
+    /// Keep Succeeded/Failed pods, whose recorded address is most likely stale.
+    #[arg(long)]
+    include_terminated: bool,
+}
+
+impl ClusterOptions {
+    /// Reject cluster flags passed without `--cluster`.
+    ///
+    /// clap's `requires = "cluster"` cannot express this: `--cluster` is a `SetTrue`
+    /// flag, which counts as *present* even when it was not passed because it has a
+    /// default value, so the constraint never fires. Left to clap, a mistyped
+    /// invocation would silently read files while looking like it queried a cluster.
+    fn reject_unless_cluster(&self, cluster: bool) -> Result<()> {
+        if cluster {
+            return Ok(());
+        }
+        let stray: Vec<&str> = [
+            self.kubeconfig.is_some().then_some("--kubeconfig"),
+            self.context.is_some().then_some("--context"),
+            (!self.namespaces.is_empty()).then_some("--namespace"),
+            self.selector.is_some().then_some("--selector"),
+            self.include_terminated.then_some("--include-terminated"),
+        ]
+        .into_iter()
+        .flatten()
+        .collect();
+        if stray.is_empty() {
+            return Ok(());
+        }
+        bail!("{} only applies together with --cluster", stray.join(", "))
+    }
+}
+
+#[cfg(feature = "cluster")]
+fn fetch_cluster(options: &ClusterOptions) -> Result<Loaded> {
+    let fetched =
+        k8s_networkpolicy_smt::cluster::fetch(&k8s_networkpolicy_smt::cluster::Options {
+            kubeconfig: options.kubeconfig.clone(),
+            context: options.context.clone(),
+            namespaces: options.namespaces.clone(),
+            selector: options.selector.clone(),
+            include_terminated: options.include_terminated,
+        })?;
+    for warning in &fetched.warnings {
+        eprintln!("warning: {warning}");
+    }
+    Ok(fetched.loaded)
+}
+
+#[cfg(not(feature = "cluster"))]
+fn fetch_cluster(_options: &ClusterOptions) -> Result<Loaded> {
+    bail!(
+        "this binary was built without the `cluster` feature, so it cannot talk to a \
+         Kubernetes API server; rebuild with `cargo build --features cluster`"
+    )
 }
 
 impl Source {
     fn load(&self) -> Result<Loaded> {
-        load(&self.filenames)
+        self.cluster_options.reject_unless_cluster(self.cluster)?;
+        if self.cluster {
+            fetch_cluster(&self.cluster_options)
+        } else {
+            load(&self.filenames)
+        }
     }
 }
 
 impl Store {
     /// The policy set and entity store, however the caller chose to name them.
     fn resolve(&self) -> Result<(PolicySet, serde_json::Value)> {
+        self.cluster_options.reject_unless_cluster(self.cluster)?;
         if let (Some(policies), Some(entities)) = (&self.policies, &self.entities) {
             return Ok((read_policies(policies)?, read_entity_json(entities)?));
         }
-        let loaded = load(&self.filenames)?;
+        let loaded = if self.cluster {
+            fetch_cluster(&self.cluster_options)?
+        } else {
+            load(&self.filenames)?
+        };
         let compiled = compile(&loaded.network_policies)?;
         let built = build(&loaded.pods, &loaded.namespaces)?;
         note_unknown_ips(&built.unknown_ips);
@@ -227,14 +323,14 @@ fn run() -> Result<ExitCode> {
             let principal = pod_ref(&from)?;
             let context = port.map(|port| context(port, &protocol)).transpose()?;
             // Any Pod, left symbolic: the residuals describe which ones qualify.
-            let peer = PartialEntityUid::new("Pod".parse()?, None);
+            let symbolic = PartialEntityUid::new("Pod".parse()?, None);
 
             for direction in Direction::ALL {
                 let outcome = evaluate(
                     &policies,
                     &entities,
                     PartialEntityUid::from_concrete(principal.clone()),
-                    peer.clone(),
+                    symbolic.clone(),
                     context.as_ref(),
                     direction,
                 )?;
@@ -340,20 +436,14 @@ mod tests {
 
         assert!(with(&[]).is_err(), "a source must be named");
         assert!(with(&["-f", "manifests"]).is_ok());
+        assert!(with(&["--cluster"]).is_ok());
         assert!(with(&["--policies", "p.cedar", "--entities", "e.json"]).is_ok());
 
         assert!(
-            with(&[
-                "-f",
-                "manifests",
-                "--policies",
-                "p.cedar",
-                "--entities",
-                "e.json"
-            ])
-            .is_err(),
-            "files to compile and compiled files are different answers to the same question"
+            with(&["--cluster", "-f", "manifests"]).is_err(),
+            "files and a cluster are different answers to the same question"
         );
+        assert!(with(&["--cluster", "--policies", "p.cedar", "--entities", "e.json"]).is_err());
     }
 
     #[test]
@@ -392,6 +482,35 @@ mod tests {
     fn compile_and_entities_also_demand_a_source() {
         assert!(parse(&["compile"]).is_err());
         assert!(parse(&["compile", "-f", "manifests"]).is_ok());
-        assert!(parse(&["entities", "-f", "a.yaml", "b.yaml"]).is_ok());
+        assert!(parse(&["compile", "--cluster"]).is_ok());
+        assert!(parse(&["entities", "--cluster", "-n", "team-a"]).is_ok());
+    }
+
+    #[test]
+    fn cluster_flags_are_rejected_without_cluster() {
+        // clap's own `requires` cannot catch this, so the check is by hand and this
+        // is what keeps it honest.
+        let with_context = ClusterOptions {
+            context: Some("prod".into()),
+            ..Default::default()
+        };
+        assert!(with_context.reject_unless_cluster(true).is_ok());
+        let error = with_context
+            .reject_unless_cluster(false)
+            .unwrap_err()
+            .to_string();
+        assert!(error.contains("--context"), "{error}");
+
+        let scoped = ClusterOptions {
+            namespaces: vec!["team-a".into()],
+            ..Default::default()
+        };
+        assert!(scoped.reject_unless_cluster(false).is_err());
+
+        assert!(
+            ClusterOptions::default()
+                .reject_unless_cluster(false)
+                .is_ok()
+        );
     }
 }

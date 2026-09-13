@@ -2,6 +2,8 @@
 //!
 //! See docs/concepts/encoding.md for the encoding and its rationale.
 
+#[cfg(feature = "cluster")]
+pub mod cluster;
 pub mod compile;
 pub mod entities;
 pub mod eval;

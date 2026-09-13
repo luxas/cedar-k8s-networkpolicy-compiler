@@ -1,0 +1,123 @@
+# The fixture applied to the local kind cluster by hack/kind-up.sh.
+#
+# It lives in its own namespaces so it collides with nothing else in the cluster
+# and cleans up with a namespace delete. Beyond the basics it deliberately
+# exercises the fields the API server *defaults*, so tests/cluster.rs can assert
+# that our defaulting agrees with Kubernetes' own -- see `defaulted-egress`.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: np2cedar-a
+  labels:
+    np2cedar.test/zone: alpha
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: np2cedar-b
+  labels:
+    np2cedar.test/zone: beta
+---
+# api accepts 8080/TCP, and only from web.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-web-to-api
+  namespace: np2cedar-a
+spec:
+  podSelector:
+    matchLabels: {app: api}
+  policyTypes: [Ingress]
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels: {app: web}
+      ports:
+        - protocol: TCP
+          port: 8080
+---
+# crosser may send into np2cedar-b, and nowhere else.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: crosser-egress
+  namespace: np2cedar-a
+spec:
+  podSelector:
+    matchLabels: {app: crosser}
+  policyTypes: [Egress]
+  egress:
+    - to:
+        - namespaceSelector:
+            matchLabels: {np2cedar.test/zone: beta}
+---
+# ... but np2cedar-b refuses every ingress. Egress says yes, ingress says no, and
+# the conjunction is what makes the answer DENY.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: deny-all-ingress
+  namespace: np2cedar-b
+spec:
+  podSelector: {}
+  policyTypes: [Ingress]
+---
+# Two things are left to the API server's defaulting here:
+#   - `policyTypes` is omitted, so Egress applies (an egress section is present)
+#     and Ingress applies too (it always does) -- which isolates `defaulted` for
+#     ingress with no ingress rule to let anything back in.
+#   - `protocol` is omitted on the port, so it means TCP.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: defaulted-egress
+  namespace: np2cedar-a
+spec:
+  podSelector:
+    matchLabels: {app: defaulted}
+  egress:
+    - to:
+        - podSelector:
+            matchLabels: {app: other}
+      ports:
+        - port: 9090
+---
+apiVersion: v1
+kind: Pod
+metadata: {name: web, namespace: np2cedar-a, labels: {app: web}}
+spec:
+  containers: [{name: pause, image: registry.k8s.io/pause:3.10}]
+---
+apiVersion: v1
+kind: Pod
+metadata: {name: api, namespace: np2cedar-a, labels: {app: api}}
+spec:
+  containers:
+    - name: pause
+      image: registry.k8s.io/pause:3.10
+      ports:
+        - {name: http, containerPort: 8080}
+---
+apiVersion: v1
+kind: Pod
+metadata: {name: other, namespace: np2cedar-a, labels: {app: other}}
+spec:
+  containers: [{name: pause, image: registry.k8s.io/pause:3.10}]
+---
+apiVersion: v1
+kind: Pod
+metadata: {name: crosser, namespace: np2cedar-a, labels: {app: crosser}}
+spec:
+  containers: [{name: pause, image: registry.k8s.io/pause:3.10}]
+---
+apiVersion: v1
+kind: Pod
+metadata: {name: defaulted, namespace: np2cedar-a, labels: {app: defaulted}}
+spec:
+  containers: [{name: pause, image: registry.k8s.io/pause:3.10}]
+---
+apiVersion: v1
+kind: Pod
+metadata: {name: back, namespace: np2cedar-b, labels: {app: back}}
+spec:
+  containers: [{name: pause, image: registry.k8s.io/pause:3.10}]
