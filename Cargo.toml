@@ -10,25 +10,38 @@ path = "src/main.rs"
 
 [dependencies]
 anyhow = "1.0.104"
-cedar-policy = { version = "4.12.0", features = ["tpe"] }
+cedar-policy = { version = "4.12.0", features = ["tpe"] }   # resolves to the [patch] below
+cedar-policy-core = "4.12.0"                                # ast::Expr, tpe::residual — the evaluator's API leaks these
+# The crates.io 0.6.0 release predates the symbolic evaluator; only the cedar-woodpecker
+# fork has it. It pins cedar-policy{,-core} by path at =4.12.0, so the [patch.crates-io]
+# section below must point ours at the same checkout or the type bridges (`AsRef` from
+# the public TPE wrappers to the core types) would cross two crate instances. The rev is
+# pinned deliberately: bump it together with the tests that byte-encode its output.
+cedar-policy-symcc = { git = "https://github.com/luxas/cedar-woodpecker", rev = "7015a6fa38b4d48a748443d1aa85f5b741f51200" }
 clap = { version = "4.6.6", features = ["derive"] }
 k8s-openapi = { version = "0.28.0", features = ["v1_34"] }
 kube = { version = "4.2.0", optional = true }        # defaults: client, rustls-tls, ring
 serde = { version = "1.0.229", features = ["derive"] }
 serde_json = "1.0.151"
-tokio = { version = "1.53.1", features = ["rt"], optional = true }
+tokio = { version = "1.53.1", features = ["rt"] }  # unconditional: the symbolic evaluator is async
 yaml_serde = "0.10.7"
 
 [dev-dependencies]
 insta = "1.48.0"
+# The examples drive async APIs from `fn main`; the library itself needs neither feature.
+tokio = { version = "1.53.1", features = ["macros", "rt-multi-thread"] }
 
 [features]
 default = ["cluster"]
 # Reading live objects from a Kubernetes API server. Off, this crate is a pure
 # offline compiler with no HTTP or TLS stack: `cargo build --no-default-features`.
-cluster = ["dep:kube", "dep:tokio"]
+cluster = ["dep:kube"]
 # Opts in the tests that need a real cluster; see hack/integration-test.sh.
 integration = ["cluster"]
 # Opts in the empirical tests: a Cilium cluster probed by kubesonde, whose observed
 # connectivity must agree with what this tool predicts. See hack/e2e-test.sh.
 e2e = ["cluster"]
+
+[patch.crates-io]
+cedar-policy = { git = "https://github.com/luxas/cedar-woodpecker", rev = "7015a6fa38b4d48a748443d1aa85f5b741f51200" }
+cedar-policy-core = { git = "https://github.com/luxas/cedar-woodpecker", rev = "7015a6fa38b4d48a748443d1aa85f5b741f51200" }

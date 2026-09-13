@@ -12,6 +12,7 @@ use k8s_networkpolicy_smt::entities::{build, ip_endpoint_entities};
 use k8s_networkpolicy_smt::eval::{Outcome, Verdict, combine, context, evaluate};
 use k8s_networkpolicy_smt::load::{Loaded, load};
 use k8s_networkpolicy_smt::schema;
+use k8s_networkpolicy_smt::symbolic::Discharger;
 
 pub struct Fixture {
     pub name: String,
@@ -71,21 +72,8 @@ impl Fixture {
     /// Evaluate both directions. `from` is a `namespace/name` pod reference; `to` is
     /// either that or a bare IP address, which becomes an `IpEndpoint`.
     pub fn outcomes(&self, from: &str, to: &str, protocol: &str, port: i64) -> Vec<Outcome> {
-        let mut json = self.entities_json.clone();
+        let (entities, resource) = self.prepared(to);
         let principal = pod_euid(from);
-        let resource = match to.parse::<IpAddr>() {
-            Ok(address) => {
-                let address = address.to_string();
-                json.as_array_mut()
-                    .expect("the entity store is a JSON array")
-                    .extend(ip_endpoint_entities(&address));
-                format!(r#"IpEndpoint::"{address}""#).parse().unwrap()
-            }
-            Err(_) => pod_euid(to),
-        };
-
-        let entities = PartialEntities::from_json_value(json, schema())
-            .unwrap_or_else(|e| panic!("{}: loading entities: {e:?}", self.name));
         let context = context(port, protocol).unwrap();
 
         Direction::ALL
@@ -102,6 +90,82 @@ impl Fixture {
                 .unwrap_or_else(|e| panic!("{}: evaluating {direction}: {e:?}", self.name))
             })
             .collect()
+    }
+
+    /// The entity store — with `to` synthesised as an `IpEndpoint` when it is a
+    /// bare address — and the resource uid to query.
+    fn prepared(&self, to: &str) -> (PartialEntities, EntityUid) {
+        let mut json = self.entities_json.clone();
+        let resource = match to.parse::<IpAddr>() {
+            Ok(address) => {
+                let address = address.to_string();
+                json.as_array_mut()
+                    .expect("the entity store is a JSON array")
+                    .extend(ip_endpoint_entities(&address));
+                format!(r#"IpEndpoint::"{address}""#).parse().unwrap()
+            }
+            Err(_) => pod_euid(to),
+        };
+        let entities = PartialEntities::from_json_value(json, schema())
+            .unwrap_or_else(|e| panic!("{}: loading entities: {e:?}", self.name));
+        (entities, resource)
+    }
+
+    /// As [`Self::outcomes`], then refined by the symbolic discharger under the
+    /// assumption that every pod address lies in one of `cidrs`. Panics if cvc5
+    /// is unavailable — loudly, so a broken test environment cannot pass.
+    pub fn outcomes_with_pod_cidrs(
+        &self,
+        from: &str,
+        to: &str,
+        protocol: &str,
+        port: i64,
+        cidrs: &[&str],
+    ) -> Vec<Outcome> {
+        let (entities, _) = self.prepared(to);
+        let mut outcomes = self.outcomes(from, to, protocol, port);
+        let cidrs: Vec<String> = cidrs.iter().map(|c| c.to_string()).collect();
+        let mut discharger = Discharger::new(&entities, &cidrs).unwrap_or_else(|e| {
+            panic!(
+                "{}: starting the discharger (is cvc5 installed, or $CVC5 set?): {e:?}",
+                self.name
+            )
+        });
+        for outcome in &mut outcomes {
+            discharger
+                .refine(&self.policy_set, outcome, false)
+                .unwrap_or_else(|e| panic!("{}: refining {}: {e:?}", self.name, outcome.direction));
+        }
+        outcomes
+    }
+
+    /// As [`Self::verdict`], under the pod-CIDR assumption.
+    pub fn verdict_with_pod_cidrs(
+        &self,
+        from: &str,
+        to: &str,
+        protocol: &str,
+        port: i64,
+        cidrs: &[&str],
+    ) -> Verdict {
+        combine(&self.outcomes_with_pod_cidrs(from, to, protocol, port, cidrs))
+    }
+
+    /// As [`Self::direction`], under the pod-CIDR assumption.
+    pub fn direction_with_pod_cidrs(
+        &self,
+        from: &str,
+        to: &str,
+        protocol: &str,
+        port: i64,
+        direction: Direction,
+        cidrs: &[&str],
+    ) -> Verdict {
+        self.outcomes_with_pod_cidrs(from, to, protocol, port, cidrs)
+            .into_iter()
+            .find(|o| o.direction == direction)
+            .expect("both directions are evaluated")
+            .verdict
     }
 
     pub fn verdict(&self, from: &str, to: &str, protocol: &str, port: i64) -> Verdict {

@@ -7,9 +7,10 @@
 
 use anyhow::{Context as _, Result};
 use cedar_policy::{
-    Context, Decision, EntityUid, PartialEntities, PartialEntityUid, PartialRequest, PolicyId,
-    PolicySet, RestrictedExpression,
+    Context, Decision, EntityTypeName, EntityUid, PartialEntities, PartialEntityUid,
+    PartialRequest, PolicyId, PolicySet, RequestEnv, RestrictedExpression,
 };
+use cedar_policy_core::ast::Expr;
 
 use crate::compile::Direction;
 use crate::schema;
@@ -39,6 +40,12 @@ pub struct Outcome {
     pub reasons: Vec<String>,
     /// Residual policy text, when the verdict is `Unknown`.
     pub residuals: Vec<String>,
+    /// Aligned with `residuals`: that policy's id and its bare condition when it is
+    /// a permit — which is every policy this compiler emits. A symbolic discharger
+    /// re-evaluates the condition under extra assumptions (see [`crate::symbolic`]).
+    pub residual_conditions: Vec<(PolicyId, Option<Expr>)>,
+    /// The request environment the outcome was evaluated in.
+    pub env: RequestEnv,
 }
 
 /// Kubernetes requires both ends to agree, so the connection verdict is the
@@ -84,6 +91,12 @@ pub fn evaluate(
         .parse()
         .expect("action name is a literal");
 
+    let env = RequestEnv::new(
+        entity_type_name(&principal)?,
+        action.clone(),
+        entity_type_name(&resource)?,
+    );
+
     let request = PartialRequest::new(principal, action, resource, context.cloned(), schema())
         .with_context(|| format!("building the {direction} request"))?;
 
@@ -104,14 +117,24 @@ pub fn evaluate(
         .map(|id| describe(policies, id))
         .collect();
     let mut residuals = Vec::new();
+    let mut residual_conditions = Vec::new();
     if verdict == Verdict::Unknown {
         for id in response.residual_permits() {
             reasons.push(describe(policies, id));
         }
         for policy in response.residual_policies() {
-            if let Some(text) = policy.to_cedar() {
-                residuals.push(text);
-            }
+            let Some(text) = policy.to_cedar() else {
+                continue;
+            };
+            // The same policy's bare condition, for the symbolic discharger. `None`
+            // would mean a non-permit residual, which this compiler never emits.
+            let core_id = cedar_policy_core::ast::PolicyID::from_string(policy.id());
+            let condition = response
+                .as_ref()
+                .get_residual_policy(&core_id)
+                .map(|residual| Expr::from(residual.get_residual().as_ref().clone()));
+            residual_conditions.push((policy.id().clone(), condition));
+            residuals.push(text);
         }
     }
     reasons.sort();
@@ -122,6 +145,8 @@ pub fn evaluate(
         verdict,
         reasons,
         residuals,
+        residual_conditions,
+        env,
     })
 }
 
@@ -130,7 +155,7 @@ pub fn evaluate(
 /// Note that Cedar assigns static policies the ids `policy0`, `policy1`, ... on
 /// parse — an `@id` annotation does *not* become the policy id — so the mapping has
 /// to go through the `@k8sPolicy`/`@k8sDirection`/`@k8sRule` annotations instead.
-fn describe(policies: &PolicySet, id: &PolicyId) -> String {
+pub(crate) fn describe(policies: &PolicySet, id: &PolicyId) -> String {
     let Some(policy) = policies.policy(id) else {
         return id.to_string();
     };
@@ -146,4 +171,11 @@ fn describe(policies: &PolicySet, id: &PolicyId) -> String {
         (Some(object), Some(direction), Some(rule)) => format!("{object} {direction}[{rule}]"),
         _ => id.to_string(),
     }
+}
+
+/// The entity type of a possibly-symbolic uid, as the public name type.
+fn entity_type_name(uid: &PartialEntityUid) -> Result<EntityTypeName> {
+    let ty = uid.as_ref().ty.to_string();
+    ty.parse()
+        .with_context(|| format!("{ty:?} is not a valid entity type name"))
 }
