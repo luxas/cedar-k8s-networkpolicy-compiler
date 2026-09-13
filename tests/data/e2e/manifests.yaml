@@ -1,0 +1,134 @@
+# The fixture Cilium enforces for real, and that kubesonde probes.
+#
+# Two properties matter here and are easy to lose:
+#
+#   1. Every pod declares containerPort 8080 *and* actually serves on it. kubesonde
+#      builds its probe set from declared container ports, and nmap cannot tell
+#      "policy dropped it" from "nothing is listening" -- so without a live listener
+#      a Deny would prove nothing.
+#   2. Everything lives in one namespace, because a Kubesonde object probes exactly
+#      one. Cross-namespace behaviour is covered by tests/data/cluster instead.
+#
+# The policies are chosen so the observed matrix contains Allows, an ingress-caused
+# Deny, and an egress-caused Deny -- the last being what actually exercises the
+# two-action conjunction against a real dataplane.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: np2cedar-e2e
+---
+# api accepts 8080/TCP from web only.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: api-allow-web
+  namespace: np2cedar-e2e
+spec:
+  podSelector:
+    matchLabels: {app: api}
+  policyTypes: [Ingress]
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels: {app: web}
+      ports:
+        - protocol: TCP
+          port: 8080
+---
+# cache accepts nothing at all.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: cache-deny-all
+  namespace: np2cedar-e2e
+spec:
+  podSelector:
+    matchLabels: {app: cache}
+  policyTypes: [Ingress]
+---
+# ... and may itself only talk to lonely, so cache -> web is denied by *egress*
+# while cache -> lonely goes through.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: cache-egress
+  namespace: np2cedar-e2e
+spec:
+  podSelector:
+    matchLabels: {app: cache}
+  policyTypes: [Egress]
+  egress:
+    - to:
+        - podSelector:
+            matchLabels: {app: lonely}
+      ports:
+        - protocol: TCP
+          port: 8080
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: web
+  namespace: np2cedar-e2e
+  labels:
+    app: web
+spec:
+  containers:
+    - name: agnhost
+      image: registry.k8s.io/e2e-test-images/agnhost:2.53
+      args: ["netexec", "--http-port=8080"]
+      ports:
+        - name: http
+          containerPort: 8080
+          protocol: TCP
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: api
+  namespace: np2cedar-e2e
+  labels:
+    app: api
+spec:
+  containers:
+    - name: agnhost
+      image: registry.k8s.io/e2e-test-images/agnhost:2.53
+      args: ["netexec", "--http-port=8080"]
+      ports:
+        - name: http
+          containerPort: 8080
+          protocol: TCP
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: cache
+  namespace: np2cedar-e2e
+  labels:
+    app: cache
+spec:
+  containers:
+    - name: agnhost
+      image: registry.k8s.io/e2e-test-images/agnhost:2.53
+      args: ["netexec", "--http-port=8080"]
+      ports:
+        - name: http
+          containerPort: 8080
+          protocol: TCP
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: lonely
+  namespace: np2cedar-e2e
+  labels:
+    app: lonely
+spec:
+  containers:
+    - name: agnhost
+      image: registry.k8s.io/e2e-test-images/agnhost:2.53
+      args: ["netexec", "--http-port=8080"]
+      ports:
+        - name: http
+          containerPort: 8080
+          protocol: TCP

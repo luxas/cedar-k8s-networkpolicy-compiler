@@ -14,7 +14,7 @@ use cedar_policy::{
 use crate::compile::Direction;
 use crate::schema;
 
-#[derive(Clone, Copy, PartialEq, Eq, Debug)]
+#[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Debug)]
 pub enum Verdict {
     Allow,
     Deny,

@@ -56,3 +56,40 @@ jobs:
       - name: Tear down
         if: always()
         run: ./hack/kind-down.sh
+
+  e2e:
+    name: Empirical (Cilium + kubesonde)
+    runs-on: ubuntu-latest
+    # Slower than the others: a cluster with no CNI, then Cilium, then kubesonde
+    # probing every pod pair with nmap.
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Create the Cilium cluster and probe the fixture
+        run: ./hack/e2e-up.sh
+
+      - name: Compare the observed connectivity with the static analysis
+        run: cargo test --features e2e
+        env:
+          KUBECONFIG: ${{ github.workspace }}/.kube/e2e-config
+
+      # A red empirical run is useless without knowing what the cluster was doing.
+      - name: Cluster state on failure
+        if: failure()
+        env:
+          KUBECONFIG: ${{ github.workspace }}/.kube/e2e-config
+        run: |
+          ./.bin/cilium status || true
+          kubectl get pods -A -o wide || true
+          kubectl get networkpolicies -A -o yaml || true
+          kubectl -n np2cedar-e2e get kubesonde -o yaml || true
+          kubectl -n kubesonde-system logs deployment/kubesonde-controller-manager --tail=200 || true
+          echo "--- probes.json ---"
+          cat .e2e/probes.json || true
+
+      - name: Tear down
+        if: always()
+        run: ./hack/e2e-down.sh
