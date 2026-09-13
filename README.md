@@ -15,6 +15,8 @@ My main goal at this moment is to:
 
 > **WARNING:** The commits in this repo **MUST NOT be used in production**; they serve only as a concretization of the ideas presented, to evaluate what direction to evolve the ideas towards, and to give something that can be experimentally tested and iterated on, in search of the final form of the features.
 
+The implementation's own documentation (quickstart, guides, deep dives and reference) starts at [`docs/README.md`](docs/README.md).
+
 In the rest of this text, I'll summarize the ideas in a blog post-style way initially, then go more technical.
 For now, I've only had time to go one pass over this text, I'll try to make it more understandable over time, if needed.
 I intend to turn this text into a series of "real" blog posts later, most likely going into more depth on each topic there.
