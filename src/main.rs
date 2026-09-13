@@ -10,6 +10,7 @@ use cedar_policy::{EntityUid, PartialEntities, PartialEntityUid, PolicySet};
 use clap::{ArgGroup, Args, Parser, Subcommand};
 
 use k8s_networkpolicy_smt::compile::{Direction, compile};
+use k8s_networkpolicy_smt::connect::synthesize;
 use k8s_networkpolicy_smt::entities::{build, ip_endpoint_entities, pod_uid};
 use k8s_networkpolicy_smt::eval::{Outcome, Verdict, combine, context, evaluate};
 use k8s_networkpolicy_smt::load::{Loaded, load};
@@ -162,6 +163,23 @@ impl Source {
 }
 
 impl Store {
+    /// The policy set alone: skips building (or reading) the entity store, and
+    /// with it the unknown-address note, which would mislead a caller that
+    /// never evaluates addresses. `--policies` still demands its `--entities`
+    /// twin (the argument graph is shared); the file is simply left unread.
+    fn resolve_policies(&self) -> Result<PolicySet> {
+        self.cluster_options.reject_unless_cluster(self.cluster)?;
+        if let Some(policies) = &self.policies {
+            return read_policies(policies);
+        }
+        let loaded = if self.cluster {
+            fetch_cluster(&self.cluster_options)?
+        } else {
+            load(&self.filenames)?
+        };
+        Ok(compile(&loaded.network_policies)?.policy_set)
+    }
+
     /// The policy set and entity store, however the caller chose to name them.
     fn resolve(&self) -> Result<(PolicySet, serde_json::Value)> {
         self.cluster_options.reject_unless_cluster(self.cluster)?;
@@ -225,6 +243,21 @@ enum Command {
         port: Option<i64>,
         #[arg(long, default_value = "TCP")]
         protocol: String,
+        #[command(flatten)]
+        symbolic: SymbolicOptions,
+    },
+    /// Synthesize the implied `connect` policies: every case in which a Pod may
+    /// talk to another Pod, requiring the egress AND the ingress permission for
+    /// the same (source, destination, port, protocol). Needs cvc5.
+    Connect {
+        #[command(flatten)]
+        store: Store,
+        /// Print the escalations as JSON instead of Cedar with comments.
+        #[arg(long)]
+        json: bool,
+        /// Write here instead of stdout.
+        #[arg(short, long)]
+        output: Option<PathBuf>,
         #[command(flatten)]
         symbolic: SymbolicOptions,
     },
@@ -382,6 +415,38 @@ fn run() -> Result<ExitCode> {
                     println!("{residual}\n");
                 }
             }
+            Ok(ExitCode::SUCCESS)
+        }
+
+        Command::Connect {
+            store,
+            json,
+            output,
+            symbolic,
+        } => {
+            // Policies only: the synthesis covers every possible pod, not one
+            // cluster snapshot, so no entity store is built or read.
+            let policies = store.resolve_policies()?;
+            let escalations = synthesize(&policies, &symbolic.pod_cidrs)?;
+            let text = if json {
+                let values: Vec<serde_json::Value> =
+                    escalations.iter().map(|e| e.to_json()).collect();
+                let mut text = serde_json::to_string_pretty(&values)?;
+                text.push('\n');
+                text
+            } else {
+                let mut text = format!(
+                    "// Synthesized connect policies: how a Pod may reach a Pod, requiring\n\
+                     // the egress and the ingress permission for the same request. {} path(s).\n",
+                    escalations.len()
+                );
+                for escalation in &escalations {
+                    text.push('\n');
+                    text.push_str(&escalation.to_text());
+                }
+                text
+            };
+            emit(&output, text.as_bytes())?;
             Ok(ExitCode::SUCCESS)
         }
 
@@ -561,6 +626,16 @@ mod tests {
             parse(&["compile", "-f", "m", "--pod-cidr", "10.0.0.0/8"]).is_err(),
             "compile has no residuals to discharge"
         );
+    }
+
+    #[test]
+    fn connect_takes_a_store_and_the_symbolic_flags() {
+        assert!(parse(&["connect"]).is_err(), "a source must be named");
+        assert!(parse(&["connect", "-f", "m"]).is_ok());
+        assert!(parse(&["connect", "--cluster"]).is_ok());
+        assert!(parse(&["connect", "-f", "m", "--json", "-o", "out.cedar"]).is_ok());
+        assert!(parse(&["connect", "-f", "m", "--pod-cidr", "10.244.0.0/16"]).is_ok());
+        assert!(parse(&["connect", "-f", "m", "--pod-cidr", "banana"]).is_err());
     }
 
     #[test]

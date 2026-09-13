@@ -1,0 +1,47 @@
+---
+source: tests/connect.rs
+expression: "synthesized(\"cross-namespace\", &[])"
+---
+// connect: (principal: Pod, action: Action::"egress", resource: Pod) via policy1.cube0, policy1.cube1, policy1.cube2, policy2.cube0; (principal: Pod, action: Action::"ingress", resource: Pod) via policy0.cube0 -> (principal: Pod, action: Action::"connect", resource: Pod) [sound]
+// path: (context.action1 == Action::"egress") && (principal.namespace == Namespace::"a") && principal.labels.hasTag("app") && (principal.labels.getTag("app") == "front") && context.resource1.namespace.labels.hasTag("kubernetes.io/metadata.name") && (context.resource1.namespace.labels.getTag("kubernetes.io/metadata.name") == "b") && (context.action2 == Action::"ingress") && (!(context.resource2.namespace == Namespace::"b")) && (context.resource1 == resource) && (context.resource2 == resource) && (context.context1.port == context.port) && (context.context1.protocol == context.protocol) && (context.context2.port == context.port) && (context.context2.protocol == context.protocol)
+@woodpecker("connect: policy1.cube0, policy1.cube1, policy1.cube2, policy2.cube0, policy0.cube0")
+permit(
+  principal is Pod,
+  action == Action::"connect",
+  resource is Pod
+) when {
+  principal.labels.hasTag("app") && (resource.namespace.labels.hasTag("kubernetes.io/metadata.name") && ((principal.namespace == Namespace::"a") && ((principal.labels.getTag("app") == "front") && ((resource.namespace.labels.getTag("kubernetes.io/metadata.name") == "b") && (!(resource.namespace == Namespace::"b"))))))
+};
+
+// connect: (principal: Pod, action: Action::"egress", resource: Pod) via policy1.cube0, policy1.cube1, policy1.cube2, policy2.cube0; (principal: Pod, action: Action::"ingress", resource: Pod) via policy0.cube0 -> (principal: Pod, action: Action::"connect", resource: Pod) [sound]
+// path: (context.action1 == Action::"egress") && (principal.namespace == Namespace::"a") && principal.labels.hasTag("app") && (!(principal.labels.getTag("app") == "front")) && (context.action2 == Action::"ingress") && (!(context.resource2.namespace == Namespace::"b")) && (context.resource1 == resource) && (context.resource2 == resource) && (context.context1.port == context.port) && (context.context1.protocol == context.protocol) && (context.context2.port == context.port) && (context.context2.protocol == context.protocol)
+@woodpecker("connect: policy1.cube0, policy1.cube1, policy1.cube2, policy2.cube0, policy0.cube0")
+permit(
+  principal is Pod,
+  action == Action::"connect",
+  resource is Pod
+) when {
+  principal.labels.hasTag("app") && ((principal.namespace == Namespace::"a") && ((!(principal.labels.getTag("app") == "front")) && (!(resource.namespace == Namespace::"b"))))
+};
+
+// connect: (principal: Pod, action: Action::"egress", resource: Pod) via policy1.cube0, policy1.cube1, policy1.cube2, policy2.cube0; (principal: Pod, action: Action::"ingress", resource: Pod) via policy0.cube0 -> (principal: Pod, action: Action::"connect", resource: Pod) [sound]
+// path: (context.action1 == Action::"egress") && (principal.namespace == Namespace::"a") && (!principal.labels.hasTag("app")) && (context.action2 == Action::"ingress") && (!(context.resource2.namespace == Namespace::"b")) && (context.resource1 == resource) && (context.resource2 == resource) && (context.context1.port == context.port) && (context.context1.protocol == context.protocol) && (context.context2.port == context.port) && (context.context2.protocol == context.protocol)
+@woodpecker("connect: policy1.cube0, policy1.cube1, policy1.cube2, policy2.cube0, policy0.cube0")
+permit(
+  principal is Pod,
+  action == Action::"connect",
+  resource is Pod
+) when {
+  (principal.namespace == Namespace::"a") && ((!principal.labels.hasTag("app")) && (!(resource.namespace == Namespace::"b")))
+};
+
+// connect: (principal: Pod, action: Action::"egress", resource: Pod) via policy1.cube0, policy1.cube1, policy1.cube2, policy2.cube0; (principal: Pod, action: Action::"ingress", resource: Pod) via policy0.cube0 -> (principal: Pod, action: Action::"connect", resource: Pod) [sound]
+// path: (context.action1 == Action::"egress") && (!(principal.namespace == Namespace::"a")) && (context.action2 == Action::"ingress") && (!(context.resource2.namespace == Namespace::"b")) && (context.resource1 == resource) && (context.resource2 == resource) && (context.context1.port == context.port) && (context.context1.protocol == context.protocol) && (context.context2.port == context.port) && (context.context2.protocol == context.protocol)
+@woodpecker("connect: policy1.cube0, policy1.cube1, policy1.cube2, policy2.cube0, policy0.cube0")
+permit(
+  principal is Pod,
+  action == Action::"connect",
+  resource is Pod
+) when {
+  (!(principal.namespace == Namespace::"a")) && (!(resource.namespace == Namespace::"b"))
+};

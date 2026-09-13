@@ -19,8 +19,8 @@ jobs:
           components: rustfmt, clippy
       - uses: Swatinem/rust-cache@v2
 
-      # The symbolic tests (tests/symbolic.rs) drive cvc5 and fail loudly without
-      # it, by design — in EVERY job that runs cargo test.
+      # The symbolic tests (tests/symbolic.rs, tests/connect.rs) drive cvc5 and
+      # fail loudly without it, by design — in EVERY job that runs cargo test.
       - name: Install cvc5
         run: |
           curl -fsSL -o /tmp/cvc5.zip \
@@ -44,8 +44,8 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
 
-      # cargo test --features integration also runs the cvc5-loud symbolic suite;
-      # see the Test job's step of the same name.
+      # cargo test --features integration also runs the cvc5-loud symbolic and
+      # connect suites; see the Test job's step of the same name.
       - name: Install cvc5
         run: |
           curl -fsSL -o /tmp/cvc5.zip \
@@ -86,8 +86,8 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
 
-      # cargo test --features e2e also runs the cvc5-loud symbolic suite;
-      # see the Test job's step of the same name.
+      # cargo test --features e2e also runs the cvc5-loud symbolic and connect
+      # suites; see the Test job's step of the same name.
       - name: Install cvc5
         run: |
           curl -fsSL -o /tmp/cvc5.zip \

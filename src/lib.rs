@@ -5,6 +5,7 @@
 #[cfg(feature = "cluster")]
 pub mod cluster;
 pub mod compile;
+pub mod connect;
 pub mod entities;
 pub mod eval;
 pub mod expr;

@@ -54,3 +54,19 @@ action "ingress", "egress" appliesTo {
         protocol: Protocol,
     },
 };
+
+// The conjunction, reified: a connection is allowed iff egress AND ingress both
+// allow it for the same (source, destination, port, protocol). The compiler
+// never emits policies for this action; `np2cedar connect` SYNTHESIZES them
+// from the ingress/egress permits via cedar-woodpecker. The context carries the
+// same {port, protocol} shape as the other two actions so the transition can
+// equate them with each intermediate request's context, and so the synthesized
+// policies can talk about the connect port.
+action "connect" appliesTo {
+    principal: [Pod],
+    resource: [Pod],
+    context: {
+        port: Long,
+        protocol: Protocol,
+    },
+};
