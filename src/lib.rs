@@ -12,6 +12,7 @@ pub mod load;
 pub mod peer;
 pub mod port;
 pub mod selector;
+pub mod symbolic;
 
 use std::sync::OnceLock;
 

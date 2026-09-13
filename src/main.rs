@@ -13,6 +13,7 @@ use k8s_networkpolicy_smt::compile::{Direction, compile};
 use k8s_networkpolicy_smt::entities::{build, ip_endpoint_entities, pod_uid};
 use k8s_networkpolicy_smt::eval::{Outcome, Verdict, combine, context, evaluate};
 use k8s_networkpolicy_smt::load::{Loaded, load};
+use k8s_networkpolicy_smt::symbolic::{Discharger, parse_cidr};
 use k8s_networkpolicy_smt::{SCHEMA_SRC, schema};
 
 #[derive(Parser)]
@@ -116,6 +117,15 @@ impl ClusterOptions {
     }
 }
 
+/// Discharging residuals with the symbolic evaluator; querying subcommands only.
+#[derive(Args, Clone, Default)]
+struct SymbolicOptions {
+    /// Assume every Pod address lies within this CIDR (repeat for dual-stack).
+    /// Needs cvc5 on $PATH, or $CVC5 pointing at it.
+    #[arg(long = "pod-cidr", value_parser = parse_cidr)]
+    pod_cidrs: Vec<String>,
+}
+
 #[cfg(feature = "cluster")]
 fn fetch_cluster(options: &ClusterOptions) -> Result<Loaded> {
     let fetched =
@@ -200,6 +210,8 @@ enum Command {
         port: i64,
         #[arg(long, default_value = "TCP")]
         protocol: String,
+        #[command(flatten)]
+        symbolic: SymbolicOptions,
     },
     /// Show what a pod may reach, as residual policies over a symbolic peer.
     Reachable {
@@ -213,6 +225,8 @@ enum Command {
         port: Option<i64>,
         #[arg(long, default_value = "TCP")]
         protocol: String,
+        #[command(flatten)]
+        symbolic: SymbolicOptions,
     },
     /// Print the Cedar schema these tools compile against.
     Schema {
@@ -256,6 +270,7 @@ fn run() -> Result<ExitCode> {
             to,
             port,
             protocol,
+            symbolic,
         } => {
             let (policies, mut entity_json) = store.resolve()?;
 
@@ -277,7 +292,7 @@ fn run() -> Result<ExitCode> {
                 .context("loading the entity store")?;
             let context = context(port, &protocol)?;
 
-            let outcomes = Direction::ALL
+            let mut outcomes = Direction::ALL
                 .into_iter()
                 .map(|direction| {
                     evaluate(
@@ -290,6 +305,19 @@ fn run() -> Result<ExitCode> {
                     )
                 })
                 .collect::<Result<Vec<_>>>()?;
+
+            // The solver only spawns when there is something it could decide.
+            if !symbolic.pod_cidrs.is_empty()
+                && outcomes.iter().any(|o| o.verdict == Verdict::Unknown)
+            {
+                let cidrs = symbolic.pod_cidrs.join(", ");
+                let mut discharger = Discharger::new(&entities, &symbolic.pod_cidrs)?;
+                for outcome in &mut outcomes {
+                    for gone in discharger.refine(&policies, outcome, false)? {
+                        eprintln!("note: {gone} can never match a pod address in {cidrs}");
+                    }
+                }
+            }
 
             for outcome in &outcomes {
                 report(outcome, &from, &to, port, &protocol);
@@ -315,6 +343,7 @@ fn run() -> Result<ExitCode> {
             from,
             port,
             protocol,
+            symbolic,
         } => {
             let (policies, entity_json) = store.resolve()?;
             let entities = PartialEntities::from_json_value(entity_json, schema())
@@ -323,18 +352,32 @@ fn run() -> Result<ExitCode> {
             let principal = pod_ref(&from)?;
             let context = port.map(|port| context(port, &protocol)).transpose()?;
             // Any Pod, left symbolic: the residuals describe which ones qualify.
-            let symbolic = PartialEntityUid::new("Pod".parse()?, None);
+            let peer = PartialEntityUid::new("Pod".parse()?, None);
 
+            let mut discharger = if symbolic.pod_cidrs.is_empty() {
+                None
+            } else {
+                Some(Discharger::new(&entities, &symbolic.pod_cidrs)?)
+            };
             for direction in Direction::ALL {
-                let outcome = evaluate(
+                let mut outcome = evaluate(
                     &policies,
                     &entities,
                     PartialEntityUid::from_concrete(principal.clone()),
-                    symbolic.clone(),
+                    peer.clone(),
                     context.as_ref(),
                     direction,
                 )?;
+                let mut pruned = Vec::new();
+                if let Some(discharger) = discharger.as_mut() {
+                    // The peer is a Pod by construction, so assuming its address
+                    // lies in the pod CIDR is exactly right here.
+                    pruned = discharger.refine(&policies, &mut outcome, true)?;
+                }
                 println!("# {direction} from {from} to any Pod: {}", outcome.verdict);
+                for gone in &pruned {
+                    println!("# pruned by --pod-cidr (can never match a Pod peer): {gone}");
+                }
                 for residual in &outcome.residuals {
                     println!("{residual}\n");
                 }
@@ -484,6 +527,40 @@ mod tests {
         assert!(parse(&["compile", "-f", "manifests"]).is_ok());
         assert!(parse(&["compile", "--cluster"]).is_ok());
         assert!(parse(&["entities", "--cluster", "-n", "team-a"]).is_ok());
+    }
+
+    #[test]
+    fn pod_cidr_is_repeatable_and_validated_at_parse_time() {
+        let query = [
+            "check", "-f", "m", "--from", "a/b", "--to", "c/d", "--port", "80",
+        ];
+        let with = |extra: &[&str]| {
+            let mut args = query.to_vec();
+            args.extend_from_slice(extra);
+            parse(&args)
+        };
+
+        assert!(with(&["--pod-cidr", "10.244.0.0/16"]).is_ok());
+        assert!(with(&["--pod-cidr", "10.244.0.0/16", "--pod-cidr", "fd00::/8"]).is_ok());
+        assert!(with(&["--pod-cidr", "banana"]).is_err());
+        assert!(with(&["--pod-cidr", "10.0.0.0/33"]).is_err());
+
+        assert!(
+            parse(&[
+                "reachable",
+                "-f",
+                "m",
+                "--from",
+                "a/b",
+                "--pod-cidr",
+                "10.0.0.0/8"
+            ])
+            .is_ok()
+        );
+        assert!(
+            parse(&["compile", "-f", "m", "--pod-cidr", "10.0.0.0/8"]).is_err(),
+            "compile has no residuals to discharge"
+        );
     }
 
     #[test]
