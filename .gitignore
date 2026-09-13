@@ -8,3 +8,6 @@
 
 # kind downloaded by hack/lib.sh when it is not already on PATH
 /.bin/
+
+# empirical e2e artefacts (probe results)
+/.e2e/

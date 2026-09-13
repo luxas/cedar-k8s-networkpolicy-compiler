@@ -29,3 +29,6 @@ default = ["cluster"]
 cluster = ["dep:kube", "dep:tokio"]
 # Opts in the tests that need a real cluster; see hack/integration-test.sh.
 integration = ["cluster"]
+# Opts in the empirical tests: a Cilium cluster probed by kubesonde, whose observed
+# connectivity must agree with what this tool predicts. See hack/e2e-test.sh.
+e2e = ["cluster"]

@@ -1,0 +1,8 @@
+# The empirical e2e cluster. Cilium replaces the default CNI, so kindnet must be
+# disabled -- which is why this cannot share the integration cluster.
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+networking:
+  disableDefaultCNI: true
+nodes:
+  - role: control-plane
