@@ -12,12 +12,14 @@ path = "src/main.rs"
 anyhow = "1.0.104"
 cedar-policy = { version = "4.12.0", features = ["tpe"] }   # resolves to the [patch] below
 cedar-policy-core = "4.12.0"                                # ast::Expr, tpe::residual — the evaluator's API leaks these
-# The crates.io 0.6.0 release predates the symbolic evaluator; only the cedar-woodpecker
-# fork has it. It pins cedar-policy{,-core} by path at =4.12.0, so the [patch.crates-io]
-# section below must point ours at the same checkout or the type bridges (`AsRef` from
-# the public TPE wrappers to the core types) would cross two crate instances. The rev is
-# pinned deliberately: bump it together with the tests that byte-encode its output.
+# The crates.io 0.6.0 release predates the symbolic evaluator, and cedar-woodpecker is
+# unpublished; only the cedar-woodpecker fork has them. Both pin cedar-policy{,-core} by
+# path at =4.12.0, so the [patch.crates-io] section below must point ours at the same
+# checkout or the type bridges (`AsRef` from the public TPE wrappers to the core types)
+# would cross two crate instances. The rev is pinned deliberately: the connect snapshots
+# byte-encode woodpecker's output, so bump it together with them.
 cedar-policy-symcc = { git = "https://github.com/luxas/cedar-woodpecker", rev = "7015a6fa38b4d48a748443d1aa85f5b741f51200" }
+cedar-woodpecker = { git = "https://github.com/luxas/cedar-woodpecker", rev = "7015a6fa38b4d48a748443d1aa85f5b741f51200" }
 clap = { version = "4.6.6", features = ["derive"] }
 k8s-openapi = { version = "0.28.0", features = ["v1_34"] }
 kube = { version = "4.2.0", optional = true }        # defaults: client, rustls-tls, ring
