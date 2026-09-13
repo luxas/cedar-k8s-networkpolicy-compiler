@@ -9,7 +9,8 @@ building the tool, the two compile steps, and the first query; the
 - **Rust** (a stable toolchain; the crate uses edition 2024).
 
 ```sh
-cargo build            # the np2cedar binary
+cargo build            # the np2cedar binary, with the Kubernetes client
+cargo build --no-default-features   # offline compiler only — no HTTP/TLS stack
 ```
 
 ## Compile, then ask
@@ -36,7 +37,8 @@ object (or the default-allow catch-all) that decided each
 ([why two directions](concepts/encoding.md)).
 
 The intermediate files are optional: `check` and `reachable` both accept `-f` directly,
-compiling on the fly.
+compiling on the fly, and `--cluster` reads a live API server instead of files
+([live cluster](guides/live-cluster.md)).
 
 ## Your first honest UNKNOWN
 

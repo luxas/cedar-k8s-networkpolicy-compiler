@@ -26,7 +26,8 @@ Compiling to Cedar turns those semantics into artifacts a machine can be precise
 
 ## What
 
-One binary (and a library) over three stages, fed from files:
+One binary (and a library) over three stages, fed from files or a
+[live cluster](guides/live-cluster.md):
 
 ```
 NetworkPolicies ──► np2cedar compile  ──► policies.cedar ─┐
@@ -81,13 +82,15 @@ enumerates. If you know what kind of reader you are, start from
 | Compiling NetworkPolicy to Cedar | [quickstart](quickstart.md) | [the encoding](concepts/encoding.md) · [translation rules](concepts/translation-rules.md) | [schema](reference/schema.md) |
 | May this pod talk to that one? | [checking connectivity](guides/checking-connectivity.md) | [partial evaluation](concepts/partial-evaluation.md) | [CLI: check](reference/cli.md#check) |
 | What can this pod reach? | [reachability](guides/reachability.md) | [partial evaluation](concepts/partial-evaluation.md) | [CLI: reachable](reference/cli.md#reachable) |
+| Reading a live cluster | [live cluster](guides/live-cluster.md) | — | [CLI: sources](reference/cli.md#sources) |
 | The codebase | [testing](contributing/testing.md) | [architecture](contributing/architecture.md) | — |
 
 ## Reading paths, by persona
 
-**The operator** — you have manifests and want answers about them.
+**The operator** — you have a cluster and want answers about it.
 [Quickstart](quickstart.md) → [checking connectivity](guides/checking-connectivity.md) →
-[reachability](guides/reachability.md). Keep the [CLI reference](reference/cli.md) at hand.
+[live cluster](guides/live-cluster.md) → [reachability](guides/reachability.md). Keep the
+[CLI reference](reference/cli.md) at hand.
 
 **The policy author** — you write NetworkPolicies and want to know what they really mean.
 [The encoding](concepts/encoding.md) → [translation rules](concepts/translation-rules.md)
@@ -114,9 +117,9 @@ neighbouring guide, deep dive and reference.
 
 ## Validation
 
-The suite checks the compiler against hand-derived truth tables and an independent
-hand-written translation. What that does and does not establish is spelled out in
-[testing](contributing/testing.md).
+The suite checks the compiler against hand-derived truth tables, an independent
+hand-written translation, and the API server's own defaulting. What that does and does
+not establish is spelled out in [testing](contributing/testing.md).
 
 ## Caveats and follow-ups
 
