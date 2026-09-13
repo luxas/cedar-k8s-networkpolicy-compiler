@@ -65,4 +65,5 @@ unrestricted, i.e. `true`** — not an empty disjunction, which is `false` and s
 denied everything the rule meant to allow.
 
 Neighbours: [the encoding](encoding.md) ·
-[testing](../contributing/testing.md) (how these rules are pinned)
+[testing](../contributing/testing.md) (how these rules are pinned against Kubernetes' own
+defaulting and against Cilium)

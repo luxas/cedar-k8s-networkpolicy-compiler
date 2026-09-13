@@ -118,8 +118,10 @@ neighbouring guide, deep dive and reference.
 ## Validation
 
 The suite checks the compiler against hand-derived truth tables, an independent
-hand-written translation, and the API server's own defaulting. What that does and does
-not establish is spelled out in [testing](contributing/testing.md).
+hand-written translation, and the API server's own defaulting — and then against reality:
+a kind cluster running Cilium enforces a fixture while kubesonde probes every pod pair,
+and every observed Allow/Deny must match np2cedar's verdict. What that does and does not
+establish is spelled out in [testing](contributing/testing.md).
 
 ## Caveats and follow-ups
 

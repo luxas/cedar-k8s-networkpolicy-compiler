@@ -80,6 +80,8 @@ hack/kind-down.sh
 `.kube/config`, so running the suite never retargets your real `kubectl` context. CI runs
 the same `kind-up`/`kind-down` scripts around its own `cargo test --features integration`
 step; the `hack/integration-test.sh` wrapper is the local convenience, not what CI calls —
-see [testing](../contributing/testing.md).
+see [testing](../contributing/testing.md). The empirical suite has its own, separate
+cluster (`hack/e2e-up.sh`): Cilium replaces kind's default CNI there, and the two must
+not clobber each other.
 
 Neighbours: [quickstart](../quickstart.md) · [CLI reference](../reference/cli.md)
