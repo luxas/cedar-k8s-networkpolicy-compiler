@@ -8,6 +8,8 @@ np2cedar check     (-f ... | --cluster | --policies P --entities E)
                    [--pod-cidr CIDR]...
 np2cedar reachable (-f ... | --cluster | --policies P --entities E)
                    --from ns/pod [--port N] [--protocol TCP] [--pod-cidr CIDR]...
+np2cedar connect   (-f ... | --cluster | --policies P --entities E)
+                   [--pod-cidr CIDR]... [--json] [-o out.cedar]
 np2cedar schema    [-o -]
 ```
 
@@ -24,7 +26,7 @@ Exactly one source must be named per invocation: `-f`, `--cluster`, or the
   in [the live-cluster guide](../guides/live-cluster.md) and are rejected without
   `--cluster`.
 - **`--policies P --entities E`** replays files produced by `compile` and `entities`;
-  the two flags come as a pair.
+  the two flags come as a pair. (`connect` reads only the policies.)
 
 Entity UIDs are namespaced paths — `Pod::"default/productpage"`,
 `Namespace::"default"` — so `--from ns/pod` addresses them directly and residual policies
@@ -61,11 +63,19 @@ port symbolic too. Always exits 0 (or 3 on error) — the output is the answer. 
 
 ## The `--pod-cidr` flag
 
-On `check` and `reachable`; repeatable, for dual-stack. Each value is validated as
-`address/prefix` at parse time. Declares that every Pod address lies within one of the
-CIDRs; residual rules that cannot match any such address are pruned, and verdicts
-collapse when that settles them. Needs cvc5 (`$CVC5` or on `$PATH`); the solver is only
-spawned when there are residuals to discharge. See
+On `check`, `reachable` and `connect`; repeatable, for dual-stack. Each value is
+validated as `address/prefix` at parse time. Declares that every Pod address lies within
+one of the CIDRs; residual rules that cannot match any such address are pruned, and
+verdicts collapse when that settles them. Needs cvc5 (`$CVC5` or on `$PATH`); the solver
+is only spawned when there are residuals to discharge. See
 [discharging unknowns](../guides/discharging-unknowns.md).
+
+## `connect`
+
+Synthesizes the implied Pod-to-Pod `connect` permits from the compiled ingress/egress
+policies. `--json` emits the escalations as JSON instead of Cedar-with-comments; `-o`
+writes to a file. Input policies must scope to ingress/egress only — anything else
+(including a previous synthesis' output) is rejected. Needs cvc5. See
+[the guide](../guides/connect.md).
 
 Neighbours: [quickstart](../quickstart.md) · [schema reference](schema.md)

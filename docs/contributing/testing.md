@@ -30,12 +30,12 @@ below), and the first build fetches the cedar fork from its pinned commit
 - **`tests/handwritten.rs`** cross-checks the compiler against
   `examples/handwritten/policies.cedar`, an independent hand translation of the same
   NetworkPolicy, over the whole bookinfo grid.
-- **`tests/symbolic.rs`** drives the solver-backed `--pod-cidr` discharge against the
-  `unknown-pod-ip` fixture: a CIDR inside the rule's exception collapses to deny, one
-  outside to allow, one straddling it stays unknown, dual-stack, and the `reachable`
-  shape. It runs by default and **fails loudly when cvc5 is missing** — a silently
-  skipped solver test would let a broken setup look green, so there is deliberately no
-  skip path.
+- **`tests/symbolic.rs`** and **`tests/connect.rs`** drive the solver-backed features
+  (`--pod-cidr` discharge, connect synthesis) against fixtures, snapshot the synthesized
+  output, and assert every escalation is sound and every synthesized permit
+  strict-validates against the bundled schema. They run by default and **fail loudly
+  when cvc5 is missing** — a silently skipped solver test would let a broken setup look
+  green, so there is deliberately no skip path.
 
 ## The live-cluster suite
 

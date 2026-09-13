@@ -7,10 +7,10 @@ building the tool, the two compile steps, and the first query; the
 ## Prerequisites
 
 - **Rust** (a stable toolchain; the crate uses edition 2024) and, for the symbolic
-  features (`--pod-cidr`), **cvc5** on `$PATH` or pointed at by `$CVC5`
+  features (`--pod-cidr`, `connect`), **cvc5** on `$PATH` or pointed at by `$CVC5`
   (`brew install cvc5`, or a [release binary](https://github.com/cvc5/cvc5/releases)).
-- **Network access for the first build.** The symbolic evaluator is unpublished, so
-  `Cargo.toml` fetches it from a pinned commit of the
+- **Network access for the first build.** The symbolic evaluator and cedar-woodpecker
+  are unpublished, so `Cargo.toml` fetches them from a pinned commit of the
   [cedar-woodpecker](https://github.com/luxas/cedar-woodpecker) fork (see
   [architecture](contributing/architecture.md#the-cedar-fork) for why, and how the pin is
   bumped).
@@ -43,8 +43,8 @@ destination's ingress rules to agree, and the parenthesized reasons name the Kub
 object (or the default-allow catch-all) that decided each
 ([why two directions](concepts/encoding.md)).
 
-The intermediate files are optional: `check` and `reachable` both accept `-f` directly,
-compiling on the fly, and `--cluster` reads a live API server instead of files
+The intermediate files are optional: `check`, `reachable` and `connect` all accept `-f`
+directly, compiling on the fly, and `--cluster` reads a live API server instead of files
 ([live cluster](guides/live-cluster.md)).
 
 ## Your first honest UNKNOWN
@@ -98,4 +98,5 @@ explains why the collapse is sound.
 
 - Deciding connections and reading verdicts: [checking connectivity](guides/checking-connectivity.md)
 - What a pod can reach, as residual policies: [reachability](guides/reachability.md)
+- Every way any pod can reach any pod, synthesized: [connect](guides/connect.md)
 - All commands and flags: [CLI reference](reference/cli.md)
