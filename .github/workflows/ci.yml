@@ -22,3 +22,37 @@ jobs:
       - run: cargo fmt --all --check
       - run: cargo clippy --all-targets --all-features -- -D warnings
       - run: cargo test
+
+      # The offline compiler must keep building without the Kubernetes client, so
+      # that anyone embedding it does not inherit an HTTP and TLS stack.
+      - run: cargo test --no-default-features
+
+  integration:
+    name: Integration (kind)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+
+      # The same scripts a developer runs, so a green build here means those
+      # scripts actually work rather than that CI has its own private recipe.
+      - name: Create the kind cluster and apply the fixture
+        run: ./hack/kind-up.sh
+
+      - name: Live-cluster tests
+        run: cargo test --features integration
+        env:
+          KUBECONFIG: ${{ github.workspace }}/.kube/config
+
+      - name: Cluster state on failure
+        if: failure()
+        env:
+          KUBECONFIG: ${{ github.workspace }}/.kube/config
+        run: |
+          kubectl get pods -A -o wide || true
+          kubectl get networkpolicies -A -o yaml || true
+
+      - name: Tear down
+        if: always()
+        run: ./hack/kind-down.sh

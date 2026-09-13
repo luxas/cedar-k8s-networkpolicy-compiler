@@ -2,3 +2,9 @@
 
 # insta writes these while a snapshot is pending review
 *.snap.new
+
+# kubeconfig for the local e2e (kind) cluster, written by hack/kind-up.sh
+/.kube/
+
+# kind downloaded by hack/lib.sh when it is not already on PATH
+/.bin/
