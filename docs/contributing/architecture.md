@@ -1,8 +1,9 @@
 # Architecture
 
-The code map for contributors: what lives where and how data flows. The behavioural
-promises the code must keep are pinned by [the test suite](testing.md); the design
-rationale, decision by decision, is in `docs/plans/`.
+The code map for contributors: what lives where, how data flows, and the dependency
+story. The behavioural promises the code must keep are pinned by
+[the test suite](testing.md); the design rationale, decision by decision, is in
+`docs/plans/`.
 
 ## Data flow
 
@@ -21,6 +22,10 @@ rationale, decision by decision, is in `docs/plans/`.
               └───────────────┬───────────────────────────────┘
                               ▼
                 eval.rs — TPE per direction: Verdict + residual conditions
+                              │
+                              ▼
+                symbolic.rs — Discharger: assumptions + cvc5 refine
+                              (--pod-cidr on check/reachable)
 ```
 
 `main.rs` is the clap CLI over all of it; `lib.rs` exposes the same modules as a library
@@ -41,6 +46,28 @@ Module notes:
   runtime lives and dies inside `fetch`. Pagination (`drain`) is kept free of `kube`
   types so the loop that decides when to stop is unit-tested without a cluster.
 - **`eval.rs`** is TPE-only; it exposes each outcome's verdict, its reasons mapped back to
-  Kubernetes objects through the policy annotations, and the residual policies.
+  Kubernetes objects through the policy annotations, the residual policies, and their
+  bare conditions plus request environment so the symbolic layer can re-evaluate them
+  without re-deriving anything.
+- **`symbolic.rs`** owns the solver bootstrap (a current-thread tokio runtime — the
+  solver spawn needs the reactor even from synchronous code) and the discharge rules.
+
+## The cedar fork
+
+The symbolic evaluator is unpublished: the crates.io `cedar-policy-symcc` release predates
+it. `Cargo.toml` therefore takes `cedar-policy-symcc` from the
+[cedar-woodpecker](https://github.com/luxas/cedar-woodpecker) repository — the Cedar
+workspace plus the evaluator — as a git dependency pinned to a commit, with
+`[patch.crates-io]` pointing `cedar-policy` and `cedar-policy-core` at the same commit.
+The patch is mandatory: the fork's crates pin each other by path, and the type bridges
+between the public TPE wrappers and the core types only line up when the whole graph
+resolves to a single instance of each crate (`cargo tree -i cedar-policy-core` must show
+exactly one node).
+
+The pin is deliberate: tests byte-encode the evaluator's output, so a moving tip would
+break unrelated changes — or silently re-record changed semantics. Bump the `rev` in
+`Cargo.toml` together with the affected snapshots, in one commit. cvc5 is installed in
+every CI job that runs `cargo test`, because the solver-backed suites run by default and
+fail loudly without it — by design.
 
 Neighbours: [testing](testing.md) · [the encoding](../concepts/encoding.md)

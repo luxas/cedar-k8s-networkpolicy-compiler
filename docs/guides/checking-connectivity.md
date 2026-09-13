@@ -8,7 +8,7 @@ explains the third verdict.
 
 ```sh
 np2cedar check (-f <files> | --cluster | --policies P --entities E) \
-               --from ns/pod --to ns/pod|IP --port N [--protocol TCP]
+               --from ns/pod --to ns/pod|IP --port N [--protocol TCP] [--pod-cidr CIDR]...
 ```
 
 ## Reading the output
@@ -42,8 +42,13 @@ what can restrict the connection is the source's egress rules.
 ## When the verdict is UNKNOWN
 
 An `UNKNOWN` names the pod whose address the cluster never recorded and prints the exact
-residual condition. The way forward is to give the store the address (`status.podIPs` in
-your manifests); the residual tells you which rule turns on it.
+residual condition. Two ways forward:
+
+- Give the store the address (`status.podIPs` in your manifests).
+- Tell the tool what is known about *all* pod addresses:
+  [`--pod-cidr`](discharging-unknowns.md) hands the pod CIDR to the symbolic evaluator,
+  which prunes residual rules that cannot match any pod address and often collapses the
+  verdict.
 
 Neighbours: [reachability](reachability.md) ·
 [partial evaluation](../concepts/partial-evaluation.md) ·

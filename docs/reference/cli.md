@@ -5,8 +5,9 @@ np2cedar compile   (-f <path|dir|->... | --cluster)  [-o policies.cedar]
 np2cedar entities  (-f <path|dir|->... | --cluster)  [-o entities.json]
 np2cedar check     (-f ... | --cluster | --policies P --entities E)
                    --from ns/pod --to ns/pod|IP --port N [--protocol TCP]
+                   [--pod-cidr CIDR]...
 np2cedar reachable (-f ... | --cluster | --policies P --entities E)
-                   --from ns/pod [--port N] [--protocol TCP]
+                   --from ns/pod [--port N] [--protocol TCP] [--pod-cidr CIDR]...
 np2cedar schema    [-o -]
 ```
 
@@ -57,5 +58,14 @@ The destination is left symbolic: prints, per direction, the verdict against "an
 and the residual policies describing which peers qualify. Omitting `--port` leaves the
 port symbolic too. Always exits 0 (or 3 on error) — the output is the answer. See
 [reachability](../guides/reachability.md).
+
+## The `--pod-cidr` flag
+
+On `check` and `reachable`; repeatable, for dual-stack. Each value is validated as
+`address/prefix` at parse time. Declares that every Pod address lies within one of the
+CIDRs; residual rules that cannot match any such address are pruned, and verdicts
+collapse when that settles them. Needs cvc5 (`$CVC5` or on `$PATH`); the solver is only
+spawned when there are residuals to discharge. See
+[discharging unknowns](../guides/discharging-unknowns.md).
 
 Neighbours: [quickstart](../quickstart.md) · [schema reference](schema.md)
