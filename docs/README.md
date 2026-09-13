@@ -3,7 +3,7 @@
 Compiles Kubernetes `NetworkPolicy` objects into a [Cedar](https://cedarpolicy.com) policy
 set, builds the matching entity store from `Pod` and `Namespace` objects, and answers
 questions about them — "may this pod talk to that one?", "what can this pod reach?" —
-with Cedar's authorizer and its type-aware partial evaluation.
+with Cedar's authorizer, its type-aware partial evaluation, and an SMT solver.
 
 ## Why
 
@@ -23,6 +23,10 @@ Compiling to Cedar turns those semantics into artifacts a machine can be precise
   cluster did not say — a pod with no recorded address — the tool answers `UNKNOWN` and
   prints the residual condition naming exactly what is missing, instead of guessing
   ([partial evaluation](concepts/partial-evaluation.md)).
+- What is known *about* an unknown — every pod address lies in the cluster's pod CIDR —
+  can be handed to a **symbolic evaluator** backed by cvc5, which turns most unknowns back
+  into definite verdicts, exactly rather than heuristically
+  ([symbolic discharge](concepts/symbolic-discharge.md)).
 
 ## What
 
@@ -44,6 +48,8 @@ Pods, Namespaces ─► np2cedar entities ──► entities.json ──┤
   ([guide](guides/checking-connectivity.md)); **`reachable`** leaves the peer
   symbolic and prints residual policies describing what qualifies
   ([guide](guides/reachability.md)).
+- **`--pod-cidr`** on the querying commands discharges address residuals with the
+  symbolic evaluator ([guide](guides/discharging-unknowns.md)).
 
 ## How
 
@@ -59,15 +65,19 @@ Both directions allow — the ingress line of the output names the rule that dec
 catch-all — and the combined verdict is `=> ALLOWED`, exit code 0. The
 [quickstart](quickstart.md) shows the full output and continues from here.
 
-When a pod's address was never recorded, the verdict is honestly `UNKNOWN`:
+When a pod's address was never recorded, the verdict is honestly `UNKNOWN` — and telling
+the tool what is known about pod addresses collapses it:
 
 ```sh
 np2cedar check -f tests/data/unknown-pod-ip --from default/gateway --to default/mystery --port 443
 # => UNKNOWN (the rule allows egress only to the internet; mystery's address is unknown)
+
+np2cedar check ... --pod-cidr 10.244.0.0/16
+# => DENIED (blocked on egress): no pod address can match 0.0.0.0/0 except 10.0.0.0/8
 ```
 
-Start at the [quickstart](quickstart.md) — it covers building the tool and the first
-queries.
+Start at the [quickstart](quickstart.md) — it covers building the tool and its
+prerequisites (the pinned Cedar fork, cvc5 for the symbolic features).
 
 ## Topics
 
@@ -82,6 +92,7 @@ enumerates. If you know what kind of reader you are, start from
 | Compiling NetworkPolicy to Cedar | [quickstart](quickstart.md) | [the encoding](concepts/encoding.md) · [translation rules](concepts/translation-rules.md) | [schema](reference/schema.md) |
 | May this pod talk to that one? | [checking connectivity](guides/checking-connectivity.md) | [partial evaluation](concepts/partial-evaluation.md) | [CLI: check](reference/cli.md#check) |
 | What can this pod reach? | [reachability](guides/reachability.md) | [partial evaluation](concepts/partial-evaluation.md) | [CLI: reachable](reference/cli.md#reachable) |
+| Unknown pod addresses | [discharging unknowns](guides/discharging-unknowns.md) | [symbolic discharge](concepts/symbolic-discharge.md) | [CLI: --pod-cidr](reference/cli.md#the---pod-cidr-flag) |
 | Reading a live cluster | [live cluster](guides/live-cluster.md) | — | [CLI: sources](reference/cli.md#sources) |
 | The codebase | [testing](contributing/testing.md) | [architecture](contributing/architecture.md) | — |
 
@@ -89,8 +100,8 @@ enumerates. If you know what kind of reader you are, start from
 
 **The operator** — you have a cluster and want answers about it.
 [Quickstart](quickstart.md) → [checking connectivity](guides/checking-connectivity.md) →
-[live cluster](guides/live-cluster.md) → [reachability](guides/reachability.md). Keep the
-[CLI reference](reference/cli.md) at hand.
+[live cluster](guides/live-cluster.md) → [discharging unknowns](guides/discharging-unknowns.md)
+→ [reachability](guides/reachability.md). Keep the [CLI reference](reference/cli.md) at hand.
 
 **The policy author** — you write NetworkPolicies and want to know what they really mean.
 [The encoding](concepts/encoding.md) → [translation rules](concepts/translation-rules.md)
@@ -99,8 +110,9 @@ ports) → [checking connectivity](guides/checking-connectivity.md) → the verd
 subtleties in [partial evaluation](concepts/partial-evaluation.md).
 
 **The formal-methods reader** — you care about what is being decided, and how exactly.
-[The encoding](concepts/encoding.md) → [partial evaluation](concepts/partial-evaluation.md).
-The places where the tool deliberately answers `UNKNOWN` are there.
+[The encoding](concepts/encoding.md) → [partial evaluation](concepts/partial-evaluation.md)
+→ [symbolic discharge](concepts/symbolic-discharge.md). The soundness arguments, their
+preconditions, and the places where the tool deliberately answers `UNKNOWN` are all there.
 
 **The contributor** — you want to change the code without breaking its promises.
 [Architecture](contributing/architecture.md) → [testing](contributing/testing.md).

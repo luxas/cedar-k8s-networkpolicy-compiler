@@ -4,7 +4,7 @@ What each suite establishes, and the conventions that keep the suite honest. The
 architecture the tests pin down is in [architecture](architecture.md).
 
 ```sh
-cargo test                            # no cluster needed: unit + snapshot + semantics + cross-check
+cargo test                            # no cluster needed: unit + snapshot + semantics + cross-check + solver
 cargo test --no-default-features      # the offline build, without the client
 cargo test --features integration     # adds the live-cluster tests
 hack/integration-test.sh              # ... including standing the cluster up first
@@ -14,6 +14,10 @@ KUBECONFIG=.kube/e2e-config \
   cargo test --features e2e           # ... compare against it repeatedly while iterating
 cargo insta review                    # accept changed snapshots
 ```
+
+"No cluster needed" is not "needs nothing": the default `cargo test` drives cvc5 (fail-loud,
+below), and the first build fetches the cedar fork from its pinned commit
+([architecture](architecture.md#the-cedar-fork)).
 
 ## The cluster-free suites
 
@@ -26,6 +30,12 @@ cargo insta review                    # accept changed snapshots
 - **`tests/handwritten.rs`** cross-checks the compiler against
   `examples/handwritten/policies.cedar`, an independent hand translation of the same
   NetworkPolicy, over the whole bookinfo grid.
+- **`tests/symbolic.rs`** drives the solver-backed `--pod-cidr` discharge against the
+  `unknown-pod-ip` fixture: a CIDR inside the rule's exception collapses to deny, one
+  outside to allow, one straddling it stays unknown, dual-stack, and the `reachable`
+  shape. It runs by default and **fails loudly when cvc5 is missing** — a silently
+  skipped solver test would let a broken setup look green, so there is deliberately no
+  skip path.
 
 ## The live-cluster suite
 

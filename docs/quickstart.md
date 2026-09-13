@@ -6,7 +6,14 @@ building the tool, the two compile steps, and the first query; the
 
 ## Prerequisites
 
-- **Rust** (a stable toolchain; the crate uses edition 2024).
+- **Rust** (a stable toolchain; the crate uses edition 2024) and, for the symbolic
+  features (`--pod-cidr`), **cvc5** on `$PATH` or pointed at by `$CVC5`
+  (`brew install cvc5`, or a [release binary](https://github.com/cvc5/cvc5/releases)).
+- **Network access for the first build.** The symbolic evaluator is unpublished, so
+  `Cargo.toml` fetches it from a pinned commit of the
+  [cedar-woodpecker](https://github.com/luxas/cedar-woodpecker) fork (see
+  [architecture](contributing/architecture.md#the-cedar-fork) for why, and how the pin is
+  bumped).
 
 ```sh
 cargo build            # the np2cedar binary, with the Kubernetes client
@@ -62,14 +69,30 @@ egress   default/gateway -> default/mystery  TCP:443  UNKNOWN  (default/egress-t
       action,
       resource
     ) when {
-      ((IpAddr::"default/mystery".addr).isInRange(ip("0.0.0.0/0"))) && (!((IpAddr::"default/mystery".addr).isInRange(ip("10.0.0.0/8"))))
+      IpAddr::"default/mystery".addr.isInRange(ip("0.0.0.0/0")) && (!IpAddr::"default/mystery".addr.isInRange(ip("10.0.0.0/8")))
     };
 => UNKNOWN (see the residuals above)
 ```
 
-Everything known has been folded away — the selectors matched, the port matched — and
-what remains is the one fact the cluster never stated, named by entity. Give the store
-the address (`status.podIPs` in the manifest) and the verdict is decided.
+The address is unknown but not arbitrary — it lies in the cluster's pod CIDR — and saying
+so collapses the verdict:
+
+```sh
+np2cedar check -f tests/data/unknown-pod-ip --from default/gateway --to default/mystery \
+               --port 443 --pod-cidr 10.244.0.0/16
+```
+
+```
+note: no status.podIPs for default/mystery; their addresses are left unknown, so ipBlock rules over them evaluate to a residual rather than a decision
+note: default/egress-to-internet egress[0] can never match a pod address in 10.244.0.0/16
+ingress  default/gateway -> default/mystery  TCP:443  ALLOW  (catch-all ingress (not isolated by any NetworkPolicy))
+egress   default/gateway -> default/mystery  TCP:443  DENY  (default/egress-to-internet egress[0], no residual rule can match a pod address in 10.244.0.0/16)
+=> DENIED (blocked on egress)
+```
+
+That is the symbolic evaluator at work — [the guide](guides/discharging-unknowns.md) shows
+the allow and stays-unknown cases too, and [the deep dive](concepts/symbolic-discharge.md)
+explains why the collapse is sound.
 
 ## Where next
 
