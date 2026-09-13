@@ -7,8 +7,8 @@ rationale, decision by decision, is in `docs/plans/`.
 ## Data flow
 
 ```
-                       load.rs (YAML/JSON files)
-                                       │
+             load.rs (YAML/JSON files)         cluster.rs (live API, feature "cluster")
+                        └──────────────┬──────────────┘
                              Loaded { network_policies, pods, namespaces }
                                        │
               ┌────────────────────────┴─────────────────────┐
@@ -23,7 +23,8 @@ rationale, decision by decision, is in `docs/plans/`.
                 eval.rs — TPE per direction: Verdict + residual conditions
 ```
 
-`main.rs` is the clap CLI over all of it; `lib.rs` exposes the same modules as a library.
+`main.rs` is the clap CLI over all of it; `lib.rs` exposes the same modules as a library
+(`cargo build --no-default-features` drops the Kubernetes client entirely).
 
 Module notes:
 
@@ -35,6 +36,10 @@ Module notes:
   as they build (constants absorbed, nesting flattened) so the output never reads
   `true && true && ...`, and its renderer hoists each clause's provenance comment above
   the clause.
+- **`cluster.rs`** returns the same `Loaded` the file loader does, so nothing downstream
+  knows where the objects came from. It is synchronous from the outside: the tokio
+  runtime lives and dies inside `fetch`. Pagination (`drain`) is kept free of `kube`
+  types so the loop that decides when to stop is unit-tested without a cluster.
 - **`eval.rs`** is TPE-only; it exposes each outcome's verdict, its reasons mapped back to
   Kubernetes objects through the policy annotations, and the residual policies.
 

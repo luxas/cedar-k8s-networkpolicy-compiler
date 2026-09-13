@@ -1,16 +1,16 @@
 # CLI reference
 
 ```
-np2cedar compile   -f <path|dir|->...  [-o policies.cedar]
-np2cedar entities  -f <path|dir|->...  [-o entities.json]
-np2cedar check     (-f ... | --policies P --entities E)
+np2cedar compile   (-f <path|dir|->... | --cluster)  [-o policies.cedar]
+np2cedar entities  (-f <path|dir|->... | --cluster)  [-o entities.json]
+np2cedar check     (-f ... | --cluster | --policies P --entities E)
                    --from ns/pod --to ns/pod|IP --port N [--protocol TCP]
-np2cedar reachable (-f ... | --policies P --entities E)
+np2cedar reachable (-f ... | --cluster | --policies P --entities E)
                    --from ns/pod [--port N] [--protocol TCP]
 np2cedar schema    [-o -]
 ```
 
-Exactly one source must be named per invocation: `-f`, or the
+Exactly one source must be named per invocation: `-f`, `--cluster`, or the
 `--policies`/`--entities` pair.
 
 ## Sources
@@ -18,6 +18,10 @@ Exactly one source must be named per invocation: `-f`, or the
 - **`-f`** takes files, directories (recursed over `*.yaml`/`*.yml`/`*.json` in sorted
   order) or `-` for stdin. Multi-document YAML is split and dispatched on `kind`, so
   NetworkPolicies, Pods and Namespaces may share a file; `*List` wrappers are unwrapped.
+- **`--cluster`** reads a live API server; its companion flags (`--kubeconfig`,
+  `--context`, `-n/--namespace`, `-l/--selector`, `--include-terminated`) are documented
+  in [the live-cluster guide](../guides/live-cluster.md) and are rejected without
+  `--cluster`.
 - **`--policies P --entities E`** replays files produced by `compile` and `entities`;
   the two flags come as a pair.
 

@@ -7,7 +7,7 @@ why there are two directions, and [partial evaluation](../concepts/partial-evalu
 explains the third verdict.
 
 ```sh
-np2cedar check (-f <files> | --policies P --entities E) \
+np2cedar check (-f <files> | --cluster | --policies P --entities E) \
                --from ns/pod --to ns/pod|IP --port N [--protocol TCP]
 ```
 

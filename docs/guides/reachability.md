@@ -5,7 +5,7 @@ policy set say? The destination is left symbolic, and the answer is a set of res
 policies per direction — conditions over the peer that would make the connection allowed.
 
 ```sh
-np2cedar reachable (-f <files> | --policies P --entities E) \
+np2cedar reachable (-f <files> | --cluster | --policies P --entities E) \
                    --from ns/pod [--port N] [--protocol TCP]
 ```
 
