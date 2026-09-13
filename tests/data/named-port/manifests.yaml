@@ -1,0 +1,43 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: named-ingress
+  namespace: default
+spec:
+  podSelector:
+    matchLabels: {app: api}
+  policyTypes: [Ingress]
+  ingress:
+    - ports:
+        - protocol: TCP
+          port: metrics
+---
+# A named port on an *egress* rule still resolves against the destination, which
+# is why it can never match an address outside the cluster.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: named-egress
+  namespace: default
+spec:
+  podSelector:
+    matchLabels: {app: client}
+  policyTypes: [Egress]
+  egress:
+    - ports:
+        - protocol: TCP
+          port: metrics
+---
+apiVersion: v1
+kind: Pod
+metadata: {name: api, namespace: default, labels: {app: api}}
+spec:
+  containers:
+    - name: api
+      ports:
+        - {name: http, containerPort: 8080}
+        - {name: metrics, containerPort: 9100}
+---
+apiVersion: v1
+kind: Pod
+metadata: {name: client, namespace: default, labels: {app: client}}

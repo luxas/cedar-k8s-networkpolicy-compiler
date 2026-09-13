@@ -1,0 +1,23 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: nodeports
+  namespace: default
+spec:
+  podSelector:
+    matchLabels: {app: svc}
+  policyTypes: [Ingress]
+  ingress:
+    # No `from`, so every source qualifies; endPort is inclusive at both ends.
+    - ports:
+        - protocol: TCP
+          port: 30000
+          endPort: 30010
+---
+apiVersion: v1
+kind: Pod
+metadata: {name: svc, namespace: default, labels: {app: svc}}
+---
+apiVersion: v1
+kind: Pod
+metadata: {name: client, namespace: default, labels: {app: client}}

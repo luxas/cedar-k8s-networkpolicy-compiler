@@ -1,0 +1,525 @@
+---
+source: tests/compile_snapshots.rs
+expression: "serde_json :: to_string_pretty(& fixture.entities_json).unwrap()"
+---
+[
+  {
+    "uid": {
+      "type": "Pod",
+      "id": "dev/x"
+    },
+    "attrs": {
+      "name": "x",
+      "namespace": {
+        "__entity": {
+          "type": "Namespace",
+          "id": "dev"
+        }
+      },
+      "labels": {
+        "__entity": {
+          "type": "StringStringMap",
+          "id": "pod/dev/x"
+        }
+      },
+      "namedPorts": {
+        "__entity": {
+          "type": "StringLongMap",
+          "id": "ports/dev/x"
+        }
+      },
+      "ip": {
+        "__entity": {
+          "type": "IpAddr",
+          "id": "dev/x"
+        }
+      }
+    },
+    "parents": [],
+    "tags": {}
+  },
+  {
+    "uid": {
+      "type": "StringStringMap",
+      "id": "pod/dev/x"
+    },
+    "attrs": {},
+    "parents": [],
+    "tags": {
+      "app": "x"
+    }
+  },
+  {
+    "uid": {
+      "type": "StringLongMap",
+      "id": "ports/dev/x"
+    },
+    "attrs": {},
+    "parents": [],
+    "tags": {}
+  },
+  {
+    "uid": {
+      "type": "IpAddr",
+      "id": "dev/x"
+    },
+    "parents": [],
+    "tags": {}
+  },
+  {
+    "uid": {
+      "type": "Pod",
+      "id": "monitoring/prom"
+    },
+    "attrs": {
+      "name": "prom",
+      "namespace": {
+        "__entity": {
+          "type": "Namespace",
+          "id": "monitoring"
+        }
+      },
+      "labels": {
+        "__entity": {
+          "type": "StringStringMap",
+          "id": "pod/monitoring/prom"
+        }
+      },
+      "namedPorts": {
+        "__entity": {
+          "type": "StringLongMap",
+          "id": "ports/monitoring/prom"
+        }
+      },
+      "ip": {
+        "__entity": {
+          "type": "IpAddr",
+          "id": "monitoring/prom"
+        }
+      }
+    },
+    "parents": [],
+    "tags": {}
+  },
+  {
+    "uid": {
+      "type": "StringStringMap",
+      "id": "pod/monitoring/prom"
+    },
+    "attrs": {},
+    "parents": [],
+    "tags": {
+      "app": "prom"
+    }
+  },
+  {
+    "uid": {
+      "type": "StringLongMap",
+      "id": "ports/monitoring/prom"
+    },
+    "attrs": {},
+    "parents": [],
+    "tags": {}
+  },
+  {
+    "uid": {
+      "type": "IpAddr",
+      "id": "monitoring/prom"
+    },
+    "parents": [],
+    "tags": {}
+  },
+  {
+    "uid": {
+      "type": "Pod",
+      "id": "platform/other"
+    },
+    "attrs": {
+      "name": "other",
+      "namespace": {
+        "__entity": {
+          "type": "Namespace",
+          "id": "platform"
+        }
+      },
+      "labels": {
+        "__entity": {
+          "type": "StringStringMap",
+          "id": "pod/platform/other"
+        }
+      },
+      "namedPorts": {
+        "__entity": {
+          "type": "StringLongMap",
+          "id": "ports/platform/other"
+        }
+      },
+      "ip": {
+        "__entity": {
+          "type": "IpAddr",
+          "id": "platform/other"
+        }
+      }
+    },
+    "parents": [],
+    "tags": {}
+  },
+  {
+    "uid": {
+      "type": "StringStringMap",
+      "id": "pod/platform/other"
+    },
+    "attrs": {},
+    "parents": [],
+    "tags": {
+      "app": "other"
+    }
+  },
+  {
+    "uid": {
+      "type": "StringLongMap",
+      "id": "ports/platform/other"
+    },
+    "attrs": {},
+    "parents": [],
+    "tags": {}
+  },
+  {
+    "uid": {
+      "type": "IpAddr",
+      "id": "platform/other"
+    },
+    "parents": [],
+    "tags": {}
+  },
+  {
+    "uid": {
+      "type": "Pod",
+      "id": "platform/scraper"
+    },
+    "attrs": {
+      "name": "scraper",
+      "namespace": {
+        "__entity": {
+          "type": "Namespace",
+          "id": "platform"
+        }
+      },
+      "labels": {
+        "__entity": {
+          "type": "StringStringMap",
+          "id": "pod/platform/scraper"
+        }
+      },
+      "namedPorts": {
+        "__entity": {
+          "type": "StringLongMap",
+          "id": "ports/platform/scraper"
+        }
+      },
+      "ip": {
+        "__entity": {
+          "type": "IpAddr",
+          "id": "platform/scraper"
+        }
+      }
+    },
+    "parents": [],
+    "tags": {}
+  },
+  {
+    "uid": {
+      "type": "StringStringMap",
+      "id": "pod/platform/scraper"
+    },
+    "attrs": {},
+    "parents": [],
+    "tags": {
+      "app": "scraper"
+    }
+  },
+  {
+    "uid": {
+      "type": "StringLongMap",
+      "id": "ports/platform/scraper"
+    },
+    "attrs": {},
+    "parents": [],
+    "tags": {}
+  },
+  {
+    "uid": {
+      "type": "IpAddr",
+      "id": "platform/scraper"
+    },
+    "parents": [],
+    "tags": {}
+  },
+  {
+    "uid": {
+      "type": "Pod",
+      "id": "prod/db"
+    },
+    "attrs": {
+      "name": "db",
+      "namespace": {
+        "__entity": {
+          "type": "Namespace",
+          "id": "prod"
+        }
+      },
+      "labels": {
+        "__entity": {
+          "type": "StringStringMap",
+          "id": "pod/prod/db"
+        }
+      },
+      "namedPorts": {
+        "__entity": {
+          "type": "StringLongMap",
+          "id": "ports/prod/db"
+        }
+      },
+      "ip": {
+        "__entity": {
+          "type": "IpAddr",
+          "id": "prod/db"
+        }
+      }
+    },
+    "parents": [],
+    "tags": {}
+  },
+  {
+    "uid": {
+      "type": "StringStringMap",
+      "id": "pod/prod/db"
+    },
+    "attrs": {},
+    "parents": [],
+    "tags": {
+      "app": "db"
+    }
+  },
+  {
+    "uid": {
+      "type": "StringLongMap",
+      "id": "ports/prod/db"
+    },
+    "attrs": {},
+    "parents": [],
+    "tags": {}
+  },
+  {
+    "uid": {
+      "type": "IpAddr",
+      "id": "prod/db"
+    },
+    "parents": [],
+    "tags": {}
+  },
+  {
+    "uid": {
+      "type": "Pod",
+      "id": "stage/db"
+    },
+    "attrs": {
+      "name": "db",
+      "namespace": {
+        "__entity": {
+          "type": "Namespace",
+          "id": "stage"
+        }
+      },
+      "labels": {
+        "__entity": {
+          "type": "StringStringMap",
+          "id": "pod/stage/db"
+        }
+      },
+      "namedPorts": {
+        "__entity": {
+          "type": "StringLongMap",
+          "id": "ports/stage/db"
+        }
+      },
+      "ip": {
+        "__entity": {
+          "type": "IpAddr",
+          "id": "stage/db"
+        }
+      }
+    },
+    "parents": [],
+    "tags": {}
+  },
+  {
+    "uid": {
+      "type": "StringStringMap",
+      "id": "pod/stage/db"
+    },
+    "attrs": {},
+    "parents": [],
+    "tags": {
+      "app": "db"
+    }
+  },
+  {
+    "uid": {
+      "type": "StringLongMap",
+      "id": "ports/stage/db"
+    },
+    "attrs": {},
+    "parents": [],
+    "tags": {}
+  },
+  {
+    "uid": {
+      "type": "IpAddr",
+      "id": "stage/db"
+    },
+    "parents": [],
+    "tags": {}
+  },
+  {
+    "uid": {
+      "type": "Namespace",
+      "id": "dev"
+    },
+    "attrs": {
+      "name": "dev",
+      "labels": {
+        "__entity": {
+          "type": "StringStringMap",
+          "id": "ns/dev"
+        }
+      }
+    },
+    "parents": [],
+    "tags": {}
+  },
+  {
+    "uid": {
+      "type": "StringStringMap",
+      "id": "ns/dev"
+    },
+    "attrs": {},
+    "parents": [],
+    "tags": {
+      "kubernetes.io/metadata.name": "dev"
+    }
+  },
+  {
+    "uid": {
+      "type": "Namespace",
+      "id": "monitoring"
+    },
+    "attrs": {
+      "name": "monitoring",
+      "labels": {
+        "__entity": {
+          "type": "StringStringMap",
+          "id": "ns/monitoring"
+        }
+      }
+    },
+    "parents": [],
+    "tags": {}
+  },
+  {
+    "uid": {
+      "type": "StringStringMap",
+      "id": "ns/monitoring"
+    },
+    "attrs": {},
+    "parents": [],
+    "tags": {
+      "kubernetes.io/metadata.name": "monitoring"
+    }
+  },
+  {
+    "uid": {
+      "type": "Namespace",
+      "id": "platform"
+    },
+    "attrs": {
+      "name": "platform",
+      "labels": {
+        "__entity": {
+          "type": "StringStringMap",
+          "id": "ns/platform"
+        }
+      }
+    },
+    "parents": [],
+    "tags": {}
+  },
+  {
+    "uid": {
+      "type": "StringStringMap",
+      "id": "ns/platform"
+    },
+    "attrs": {},
+    "parents": [],
+    "tags": {
+      "kubernetes.io/metadata.name": "platform",
+      "team": "platform"
+    }
+  },
+  {
+    "uid": {
+      "type": "Namespace",
+      "id": "prod"
+    },
+    "attrs": {
+      "name": "prod",
+      "labels": {
+        "__entity": {
+          "type": "StringStringMap",
+          "id": "ns/prod"
+        }
+      }
+    },
+    "parents": [],
+    "tags": {}
+  },
+  {
+    "uid": {
+      "type": "StringStringMap",
+      "id": "ns/prod"
+    },
+    "attrs": {},
+    "parents": [],
+    "tags": {
+      "kubernetes.io/metadata.name": "prod"
+    }
+  },
+  {
+    "uid": {
+      "type": "Namespace",
+      "id": "stage"
+    },
+    "attrs": {
+      "name": "stage",
+      "labels": {
+        "__entity": {
+          "type": "StringStringMap",
+          "id": "ns/stage"
+        }
+      }
+    },
+    "parents": [],
+    "tags": {}
+  },
+  {
+    "uid": {
+      "type": "StringStringMap",
+      "id": "ns/stage"
+    },
+    "attrs": {},
+    "parents": [],
+    "tags": {
+      "kubernetes.io/metadata.name": "stage"
+    }
+  }
+]

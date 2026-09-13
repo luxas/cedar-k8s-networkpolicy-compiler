@@ -1,0 +1,28 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-web-to-api
+  namespace: default
+spec:
+  podSelector:
+    matchLabels: {app: api}
+  policyTypes: [Ingress]
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels: {app: web}
+      ports:
+        - protocol: TCP
+          port: 8080
+---
+apiVersion: v1
+kind: Pod
+metadata: {name: web, namespace: default, labels: {app: web}}
+---
+apiVersion: v1
+kind: Pod
+metadata: {name: api, namespace: default, labels: {app: api}}
+---
+apiVersion: v1
+kind: Pod
+metadata: {name: other, namespace: default, labels: {app: other}}

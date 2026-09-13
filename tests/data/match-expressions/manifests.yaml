@@ -1,0 +1,42 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: expressions
+  namespace: default
+spec:
+  podSelector:
+    matchExpressions:
+      - {key: app, operator: Exists}
+  policyTypes: [Ingress]
+  ingress:
+    - from:
+        - podSelector:
+            matchExpressions:
+              - {key: tier, operator: In, values: [frontend, mid]}
+              - {key: quarantine, operator: DoesNotExist}
+              # NotIn also matches when the key is absent entirely.
+              - {key: zone, operator: NotIn, values: [dmz]}
+---
+apiVersion: v1
+kind: Pod
+metadata: {name: target, namespace: default, labels: {app: target}}
+---
+apiVersion: v1
+kind: Pod
+metadata: {name: fe, namespace: default, labels: {tier: frontend}}
+---
+apiVersion: v1
+kind: Pod
+metadata: {name: mid, namespace: default, labels: {tier: mid, zone: internal}}
+---
+apiVersion: v1
+kind: Pod
+metadata: {name: db, namespace: default, labels: {tier: db}}
+---
+apiVersion: v1
+kind: Pod
+metadata: {name: fe-quarantined, namespace: default, labels: {tier: frontend, quarantine: "true"}}
+---
+apiVersion: v1
+kind: Pod
+metadata: {name: fe-dmz, namespace: default, labels: {tier: frontend, zone: dmz}}

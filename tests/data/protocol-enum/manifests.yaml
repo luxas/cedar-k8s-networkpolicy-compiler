@@ -1,0 +1,19 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata: {name: udp-only, namespace: default}
+spec:
+  podSelector:
+    matchLabels: {app: dns}
+  policyTypes: [Ingress]
+  ingress:
+    - ports:
+        - protocol: UDP
+          port: 53
+---
+apiVersion: v1
+kind: Pod
+metadata: {name: dns, namespace: default, labels: {app: dns}}
+---
+apiVersion: v1
+kind: Pod
+metadata: {name: client, namespace: default, labels: {app: client}}

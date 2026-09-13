@@ -1,0 +1,4 @@
+/target
+
+# insta writes these while a snapshot is pending review
+*.snap.new

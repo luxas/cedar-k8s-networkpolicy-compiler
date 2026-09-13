@@ -1,0 +1,28 @@
+# Egress from `a` permits the connection, ingress in `b` refuses it. The
+# conjunction is what makes the answer DENY.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata: {name: allow-egress-to-b, namespace: a}
+spec:
+  podSelector:
+    matchLabels: {app: front}
+  policyTypes: [Egress]
+  egress:
+    - to:
+        - namespaceSelector:
+            matchLabels: {kubernetes.io/metadata.name: b}
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata: {name: deny-all-ingress, namespace: b}
+spec:
+  podSelector: {}
+  policyTypes: [Ingress]
+---
+apiVersion: v1
+kind: Pod
+metadata: {name: front, namespace: a, labels: {app: front}}
+---
+apiVersion: v1
+kind: Pod
+metadata: {name: back, namespace: b, labels: {app: back}}

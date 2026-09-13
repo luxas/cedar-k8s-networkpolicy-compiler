@@ -1,0 +1,25 @@
+# policyTypes is omitted. Ingress always applies, and Egress applies because an
+# `egress` section is present -- so `worker` is isolated for ingress too, with no
+# ingress rules at all.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata: {name: egress-only, namespace: default}
+spec:
+  podSelector:
+    matchLabels: {app: worker}
+  egress:
+    - to:
+        - podSelector:
+            matchLabels: {app: cache}
+---
+apiVersion: v1
+kind: Pod
+metadata: {name: worker, namespace: default, labels: {app: worker}}
+---
+apiVersion: v1
+kind: Pod
+metadata: {name: cache, namespace: default, labels: {app: cache}}
+---
+apiVersion: v1
+kind: Pod
+metadata: {name: other, namespace: default, labels: {app: other}}
